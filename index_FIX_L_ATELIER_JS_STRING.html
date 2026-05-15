@@ -2038,6 +2038,44 @@ function showOAVTechnicalRemark(slug, btn){
   }
 }
 </style>
+
+<style id="recma-media-intel-group-pills">
+#view-atlas-spends .recma-mi-group-stack,
+#view-atlas-roster .recma-mi-group-stack,
+#view-nbb-report .recma-mi-group-stack,
+#view-pitch-pulse .recma-mi-group-stack,
+#view-atlas-awards .recma-mi-group-stack{
+  display:inline-flex;
+  align-items:center;
+  flex-wrap:wrap;
+  gap:4px 10px;
+}
+#view-atlas-spends .recma-mi-group-label,
+#view-atlas-roster .recma-mi-group-label,
+#view-nbb-report .recma-mi-group-label,
+#view-pitch-pulse .recma-mi-group-label,
+#view-atlas-awards .recma-mi-group-label{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  color:#374151!important;
+  font-size:11px;
+  font-weight:700;
+  white-space:nowrap;
+}
+#view-atlas-spends .recma-mi-colorbar,
+#view-atlas-roster .recma-mi-colorbar,
+#view-nbb-report .recma-mi-colorbar,
+#view-pitch-pulse .recma-mi-colorbar,
+#view-atlas-awards .recma-mi-colorbar{
+  display:inline-block;
+  width:8px;
+  height:22px;
+  border-radius:999px;
+  border:1px solid rgba(17,24,39,.14);
+  flex:0 0 auto;
+}
+</style>
 <style id="recma-roster-red-hero-kpi">
 #view-atlas-roster .section-header{
   position:relative;
@@ -7058,6 +7096,40 @@ const ROSTER_GROUP_TEXT = {
   'Independent':'#374151'
 };
 
+function recmaEscHtml(value) {
+  return String(value ?? '').replace(/[&<>"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]));
+}
+
+function recmaMediaIntelGroupColor(group) {
+  const raw = String(group || '').trim();
+  const normalized = raw
+    .replace(/Omnicom Media Gr\.?/i, 'Omnicom Media Group')
+    .replace(/OMD OM Group/i, 'Omnicom Media Group')
+    .replace(/GroupM/i, 'WPP Media')
+    .replace(/^Havas$/i, 'Havas Media Network')
+    .replace(/^Publicis$/i, 'Publicis Media');
+  const colorMaps = [
+    typeof ROSTER_GROUP_COLORS !== 'undefined' ? ROSTER_GROUP_COLORS : {},
+    typeof GROUP_COLORS_NBB !== 'undefined' ? GROUP_COLORS_NBB : {},
+    typeof AWARDS_GROUP_COLORS !== 'undefined' ? AWARDS_GROUP_COLORS : {},
+    { 'Omnicom Media Group':'#FFE699', 'Publicis Media':'#FFEADD', 'dentsu':'#E2F0D9', 'WPP Media':'#FFE4FF', 'Havas Media Network':'#DCB9FF', 'IPG Mediabrands':'#d1fae5', 'Independent':'#e5e7eb', 'Others':'#e5e7eb', 'Local Agencies':'#e5e7eb' }
+  ];
+  for(const map of colorMaps){
+    if(map[normalized]) return map[normalized];
+    if(map[raw]) return map[raw];
+  }
+  return '#e5e7eb';
+}
+
+function recmaMediaIntelGroupPill(groups) {
+  const parts = String(groups || '—').split(',').map(g => g.trim()).filter(Boolean);
+  const labels = (parts.length ? parts : ['—']).map(group => {
+    const color = recmaMediaIntelGroupColor(group);
+    return `<span class="recma-mi-group-label"><span class="recma-mi-colorbar" style="background:${color}"></span><span>${recmaEscHtml(group)}</span></span>`;
+  });
+  return `<span class="recma-mi-group-stack">${labels.join('')}</span>`;
+}
+
 // Build Agency Roster data from the restored Advertiser Spends dataset.
 // The original static ROSTER_DATA block is not present in this file, so the roster
 // chart must derive its agency totals from SPENDS_DATA at render time.
@@ -7279,7 +7351,7 @@ function renderRosterTableRows(totalOAV) {
         ${r.agency}${isH?' ← You':''}
       </td>
       <td style="padding:9px 12px">
-        <span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;background:${gc}18;color:${gc}">${r.group}</span>
+        ${recmaMediaIntelGroupPill(r.group)}
       </td>
       <td style="padding:9px 12px;text-align:right">
         <div style="display:flex;align-items:center;gap:6px;justify-content:flex-end">
@@ -7500,7 +7572,7 @@ function renderNBBTable() {
         ${d.agency}${isHavas?' ← You':''}
       </td>
       <td style="padding:9px 12px">
-        <span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;background:${gc};color:${gt};border:1px solid ${gt}30">${d.group}</span>
+        ${recmaMediaIntelGroupPill(d.group)}
       </td>
       <td style="padding:9px 12px;text-align:right;font-size:12px;font-weight:600;color:var(--green)">${nbbMoney(d.wins)}</td>
       <td style="padding:9px 12px;text-align:right;font-size:12px;font-weight:600;color:var(--red)">${nbbMoney(d.departures)}</td>
@@ -7674,7 +7746,7 @@ function renderAwardsTable() {
       <td style="padding:9px 12px"><span class="rank-b${i<3?' top':''}">${i+1}</span></td>
       <td style="padding:9px 12px;font-size:12px;font-weight:${isHavas?700:500};color:${isHavas?'var(--bordeaux)':'var(--text)'}">
         ${d.agency}${isHavas?' ← You':''}
-        <span style="margin-left:6px;font-size:9px;font-weight:700;padding:1px 6px;border-radius:8px;background:${gcol}18;color:${gcol}">${d.group}</span>
+        <span style="margin-left:8px">${recmaMediaIntelGroupPill(d.group)}</span>
       </td>
       <td style="padding:9px 12px">
         <div style="display:flex;align-items:center;gap:6px">
@@ -7922,7 +7994,7 @@ function renderPPTable(data) {
       <td style="padding:8px 12px;font-size:11px;color:var(--gray-600)">${r.s||'—'}</td>
       <td style="padding:8px 12px;text-align:right;font-size:12px;font-weight:700;color:var(--navy)">$${r.sp}m</td>
       <td style="padding:8px 12px;font-size:11px;font-weight:${isH(r)?700:400};color:${isH(r)?'var(--bordeaux)':'var(--text)'}">${r.n||'—'}</td>
-      <td style="padding:8px 12px;font-size:11px;color:var(--gray-600)">${r.g||'—'}</td>
+      <td style="padding:8px 12px;font-size:11px;color:var(--gray-600)">${recmaMediaIntelGroupPill(r.g||'—')}</td>
       <td style="padding:8px 12px"><span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:10px;background:${r.t==='Global'?'#dbeafe':r.t==='Regional'?'#d1fae5':'#f3f4f6'};color:${r.t==='Global'?'#1d4ed8':r.t==='Regional'?'#065f46':'#374151'}">${r.t||'—'}</span></td>
       <td style="padding:8px 12px;font-size:11px;color:var(--gray-600)">${r.c||'—'}</td>
       <td style="padding:8px 12px;font-size:11px;color:var(--gray-600)">${r.de||'—'}</td>
@@ -8693,7 +8765,7 @@ if(typeof window.switchOAVTab !== 'function'){
         <h3>${d.agency}</h3>
         <span style="width:9px;height:22px;border-radius:999px;background:${color};display:inline-block;border:1px solid rgba(0,0,0,.12)"></span>
       </div>
-      <p style="font-weight:800;color:${color};margin-bottom:10px">${d.group}</p>
+      <p style="margin-bottom:10px">${recmaMediaIntelGroupPill(d.group)}</p>
       <div class="roster-detail-kpis">
         <div class="roster-detail-kpi"><small>Rank</small><b>#${rank}</b></div>
         <div class="roster-detail-kpi"><small>OAV</small><b>${money(d.total)}</b></div>
@@ -8836,7 +8908,7 @@ if(typeof window.switchOAVTab !== 'function'){
         return `<tr style="${isHavas?'background:#fdf7f8;border-left:3px solid var(--bordeaux)':''};border-bottom:1px solid var(--gray-100)">
           <td style="padding:9px 12px"><span class="rank-b${i<3?' top':''}">${i+1}</span></td>
           <td style="padding:9px 12px;font-size:12px;font-weight:${isHavas?700:500};color:${isHavas?'var(--bordeaux)':'var(--text)'}">${d.agency}${isHavas?' ← You':''}</td>
-          <td style="padding:9px 12px"><span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;background:${gcol}18;color:${gcol}">${d.group}</span></td>
+          <td style="padding:9px 12px">${recmaMediaIntelGroupPill(d.group)}</td>
           <td style="padding:9px 12px">
             <div style="display:flex;align-items:center;gap:6px">
               <div style="flex:1;height:16px;background:var(--gray-100);border-radius:3px;overflow:hidden;max-width:90px">
@@ -8867,7 +8939,7 @@ if(typeof window.switchOAVTab !== 'function'){
         return `<tr style="${isHavas?'background:#fdf7f8;border-left:3px solid var(--bordeaux)':''};border-bottom:1px solid var(--gray-100)">
           <td style="padding:9px 12px;font-size:12px;font-weight:700">${d.advertiser}</td>
           <td style="padding:9px 12px;font-size:12px">${d.agency}</td>
-          <td style="padding:9px 12px;font-size:11px;color:var(--gray-600)">${d.group}</td>
+          <td style="padding:9px 12px;font-size:11px;color:var(--gray-600)">${recmaMediaIntelGroupPill(d.group)}</td>
           <td class="c" style="padding:9px 12px;font-weight:900;color:var(--bordeaux)">${d.awards}</td>
           <td class="c" style="padding:9px 12px;font-weight:800">${d.pts}</td>
         </tr>`;
@@ -9299,7 +9371,7 @@ document.addEventListener('DOMContentLoaded', function(){
         <td style="padding:9px 12px;font-size:12px;color:var(--gray-600)">${r.parent}</td>
         <td style="padding:9px 12px;text-align:right;font-size:12px;font-weight:700;color:var(--navy)">${converted(r.spends)}</td>
         <td style="padding:9px 12px;font-size:12px;color:${isHavas?'var(--bordeaux)':'var(--text)'};font-weight:${isHavas?700:400}">${r.agency}</td>
-        <td style="padding:9px 12px;font-size:12px;color:var(--gray-600)">${r.group}</td>
+        <td style="padding:9px 12px;font-size:12px;color:var(--gray-600)">${recmaMediaIntelGroupPill(r.group)}</td>
         <td style="padding:9px 12px;font-size:11px;color:var(--gray-600)">Hong Kong</td>
         <td style="padding:9px 12px;font-size:11px;color:var(--gray-600)">${r.sector || '—'}</td>
       </tr>`;
