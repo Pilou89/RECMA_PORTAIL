@@ -2621,6 +2621,7 @@ function showOAVTechnicalRemark(slug, btn){
 <div class="nav-section-title">Local Market Intel</div>
 <div class="nav-item" onclick="showView('atlas-spends',this)"><span class="nav-icon">💰</span> Advertiser Spends</div>
 <div class="nav-item" onclick="showView('atlas-roster',this)"><span class="nav-icon">🏢</span> Media Agency Roster</div>
+<div class="nav-item" onclick="showView('nbb-report',this)"><span class="nav-icon">📈</span> New Biz Balance</div>
 <div class="nav-item" onclick="showView('pitch-pulse',this)"><span class="nav-icon">📊</span> Pitch Pulse</div>
 <div class="nav-item" onclick="showView('atlas-awards',this)"><span class="nav-icon">🏆</span> Awards</div>
 </div>
@@ -3816,9 +3817,9 @@ function showOAVTechnicalRemark(slug, btn){
 <option value="EUR">Currency  EUR</option>
 </select><button class="pp-hero-btn" onclick="applyPPFilters()">Apply</button>
 </div></div>
-<div class="dash-grid-2">
-<div class="table-card"><div class="table-card-header"><div><div class="table-card-title">Sectors</div></div></div><div id="pp-sector-chart" style="padding:18px"></div></div>
-<div class="table-card"><div class="table-card-header"><div><div class="table-card-title">Networks</div></div></div><div id="pp-network-chart" style="padding:18px"></div></div>
+<div class="table-card">
+<div class="table-card-header"><div><div class="table-card-title">Sectors</div><div class="table-card-sub">Total spends by sector</div></div></div>
+<div id="pp-sector-chart" style="padding:18px"></div>
 </div>
 <div class="table-card" style="margin-top:18px">
 <div class="table-card-header">
@@ -3844,6 +3845,50 @@ function showOAVTechnicalRemark(slug, btn){
 <tbody id="pp-tbody"></tbody>
 </table>
 </div>
+</div>
+</div>
+<div class="view" id="view-nbb-report">
+<div class="section-header">
+<div>
+<div class="section-title">New Biz Balance</div>
+<div class="section-subtitle">Hong Kong · wins, departures and retentions by network</div>
+</div>
+<div class="section-badge">Local Market Intel</div>
+<div class="filters-bar">
+<select class="filter-select" id="nbb-group-filter" onchange="renderNBBView()">
+<option value="">Group: All</option>
+<option value="Publicis Media">Publicis Media</option>
+<option value="Havas Media Network">Havas Media Network</option>
+<option value="Omnicom Media Group">Omnicom Media Group</option>
+<option value="dentsu">dentsu</option>
+<option value="GroupM">GroupM</option>
+<option value="IPG Mediabrands">IPG Mediabrands</option>
+<option value="Others">Others</option>
+</select>
+<select class="filter-select" id="nbb-outcome-filter" onchange="renderNBBView()">
+<option value="">Outcome: All</option>
+<option value="pos">Positive NBB</option>
+<option value="neg">Negative NBB</option>
+</select>
+</div></div>
+<div class="kpi-grid" id="nbb-kpis" style="grid-template-columns:repeat(4,1fr);margin-bottom:18px"></div>
+<div class="table-card">
+<div class="table-card-header">
+<div>
+<div class="table-card-title">New Biz Balance · Hong Kong</div>
+<div class="table-card-sub" id="nbb-count">— networks</div>
+</div>
+</div>
+<div class="table-wrap">
+<table>
+<thead><tr><th>Rank</th><th onclick="sortNBB('agency')">Agency</th><th onclick="sortNBB('group')">Group</th><th onclick="sortNBB('wins')">Wins</th><th onclick="sortNBB('departures')">Departures</th><th onclick="sortNBB('retentions')">Retentions</th><th onclick="sortNBB('nbb')">NBB</th><th>Win rate</th></tr></thead>
+<tbody id="nbb-tbody"></tbody>
+</table>
+</div>
+</div>
+<div class="table-card" style="margin-top:18px">
+<div class="table-card-header"><div><div class="table-card-title">Wins vs Departures</div><div class="table-card-sub">Integrated spends by network · positive and negative movement</div></div></div>
+<div id="nbb-chart-wrap" style="padding:18px"></div>
 </div>
 </div>
 <div class="view" id="view-atlas-awards">
@@ -3881,8 +3926,6 @@ function showOAVTechnicalRemark(slug, btn){
     <option value="low">Low awards</option>
   </select>
 </div></div>
-<div class="kpi-grid"
- id="awards-kpis" style="grid-template-columns:repeat(4,1fr);margin-bottom:18px"></div>
 <div class="table-card">
 <div class="table-card-header">
 <div>
@@ -5726,7 +5769,11 @@ font-size:27px;
 }
 </style>
 
-</head><body>${body.innerHTML}<script>window.onload=()=>window.print()<\/script>
+</head><body>${body.innerHTML}<script>window.onload=()=>window.print()<\/script></body></html>`);
+    win.document.close();
+  }
+}
+</script>
 <script id="recma-local-market-intel-restore-js">
 (function(){
   function uniq(arr){return [...new Set(arr.filter(Boolean))].sort();}
@@ -5787,6 +5834,7 @@ font-size:27px;
         if(id === 'atlas-spends' && typeof renderSpendsTable === 'function') { if(window.recmaFillSpendsFilters) recmaFillSpendsFilters(); renderSpendsTable(); }
         if(id === 'atlas-roster' && typeof renderRosterTable === 'function') renderRosterTable();
         if(id === 'atlas-awards' && typeof renderAwardsView === 'function') renderAwardsView();
+        if(id === 'nbb-report' && typeof renderNBBView === 'function') renderNBBView();
 
         if(id === 'pitch-pulse'){
           if(typeof initPPFilters === 'function') initPPFilters();
@@ -6336,7 +6384,21 @@ function renderMktLocal() {
   function buildSection(crits, label, color) {
     if(!crits.length) return '';
     return `
-      <tr><td>${c.name}</td>
+      <tr style="background:var(--gray-50)">
+        <td colspan="${selected.length + 2}" style="padding:8px 12px;font-size:10px;font-weight:800;color:${color};text-transform:uppercase;letter-spacing:1px">${label}</td>
+      </tr>
+      ${crits.map(c => {
+        const scores = selected.map(ag => ag.s?.[c.code] ?? 0);
+        const max = Math.max(...scores);
+        const cells = selected.map(ag => {
+          const score = ag.s?.[c.code] ?? 0;
+          const isLeader = score === max && max > 0;
+          const isYou = ag.isYou;
+          return `<td style="padding:8px;text-align:center;font-size:12px;font-weight:${isYou?800:700};color:${isYou?'var(--bordeaux)':'var(--navy)'}">${score>0?'+':''}${score}${isLeader?' ★':''}</td>`;
+        }).join('');
+        return `<tr style="border-bottom:1px solid var(--gray-100)">
+          <td style="padding:8px 12px;font-size:10px;font-weight:800;color:var(--gray-500)">${c.code}</td>
+          <td style="padding:8px 12px;font-size:11px;font-weight:600;color:var(--text)">${c.name}</td>
           ${cells}
         </tr>`;
       }).join('')}`;
@@ -6990,6 +7052,71 @@ const ROSTER_GROUP_TEXT = {
   'Independent':'#374151'
 };
 
+// Build Agency Roster data from the restored Advertiser Spends dataset.
+// The original static ROSTER_DATA block is not present in this file, so the roster
+// chart must derive its agency totals from SPENDS_DATA at render time.
+var ROSTER_DATA = [];
+
+function splitRosterField(value) {
+  return String(value || '')
+    .split(',')
+    .map(v => v.trim())
+    .filter(Boolean);
+}
+
+function normalizeRosterAgency(name) {
+  const clean = String(name || '').trim();
+  if(!clean) return 'Unknown agency';
+  if(/^havas$/i.test(clean)) return 'Havas Media';
+  return clean;
+}
+
+function normalizeRosterGroup(group) {
+  const clean = String(group || '').trim();
+  if(!clean) return 'Independent';
+  if(/^wpp$/i.test(clean) || /^groupm$/i.test(clean)) return 'WPP Media';
+  if(/^omd om group$/i.test(clean) || /^omnicom$/i.test(clean)) return 'Omnicom Media Group';
+  if(/^havas$/i.test(clean)) return 'Havas Media Network';
+  if(/^publicis$/i.test(clean)) return 'Publicis Media';
+  if(/^dentsu$/i.test(clean)) return 'dentsu';
+  return clean;
+}
+
+function recmaBuildRosterDataFromSpends() {
+  const rows = Array.isArray(window.SPENDS_DATA) ? window.SPENDS_DATA : [];
+  const byAgency = {};
+
+  rows.forEach(r => {
+    const agencies = splitRosterField(r.agency);
+    const groups = splitRosterField(r.group);
+    if(!agencies.length) return;
+
+    const value = Number(r.spends) || 0;
+    const splitValue = value / agencies.length;
+
+    agencies.forEach((agencyName, idx) => {
+      const agency = normalizeRosterAgency(agencyName);
+      const group = normalizeRosterGroup(groups[idx] || groups[0] || 'Independent');
+      const key = agency + '||' + group;
+      if(!byAgency[key]) {
+        byAgency[key] = {agency, group, total:0, count:0};
+      }
+      byAgency[key].total += splitValue;
+      byAgency[key].count += 1;
+    });
+  });
+
+  return Object.values(byAgency)
+    .map(r => ({...r, total: Math.round(r.total * 10) / 10}))
+    .filter(r => r.total > 0)
+    .sort((a,b) => b.total - a.total);
+}
+
+function recmaRefreshRosterData() {
+  ROSTER_DATA = recmaBuildRosterDataFromSpends();
+  return ROSTER_DATA;
+}
+
 // Sector totals derived from SPENDS_DATA
 function getRosterSectorData() {
   const map = {};
@@ -7005,6 +7132,16 @@ let rosterSortKey='total', rosterSortDir=-1;
 let rosterView='bar'; // 'bar' | 'table'
 
 function renderRosterTable() {
+  recmaRefreshRosterData();
+  if(!ROSTER_DATA.length) {
+    const setKPI = (id,val) => { const el=document.getElementById(id); if(el) el.textContent=val; };
+    setKPI('roster-kpi-total', '—');
+    setKPI('roster-kpi-count', '0');
+    const tbody = document.getElementById('roster-tbody');
+    if(tbody) tbody.innerHTML = '<tr><td colspan="6" style="padding:14px;color:var(--gray-600)">No roster data available.</td></tr>';
+    return;
+  }
+
   // Render KPIs
   const totalOAV = ROSTER_DATA.reduce((s,r)=>s+r.total,0);
   const havasRow = ROSTER_DATA.find(r=>r.group==='Havas Media Network');
@@ -7168,6 +7305,7 @@ function rosterShareView(view) {
 function sortRoster(key) {
   rosterSortDir = rosterSortKey===key ? -rosterSortDir : -1;
   rosterSortKey = key;
+  recmaRefreshRosterData();
   const totalOAV = ROSTER_DATA.reduce((s,r)=>s+r.total,0);
   renderRosterTableRows(totalOAV);
 }
@@ -7422,7 +7560,6 @@ let awardsSortKey = 'pts', awardsSortDir = -1;
 
 function renderAwardsView() {
   buildAwardsYearChips();
-  renderAwardsKPIs();
   renderAwardsTable();
   drawAwardsChart();
 }
@@ -7664,7 +7801,6 @@ function renderPPAll() {
   const data = ppFiltered.length ? ppFiltered : PP_ALL_DATA;
   renderPPKPIs(data);
   renderPPSectorChart(data);
-  renderPPNetworkChart(data);
   renderPPTable(data);
   const cnt = document.getElementById('pp-count');
   if(cnt) cnt.textContent = data.length.toLocaleString() + ' advertisers';
@@ -7703,18 +7839,26 @@ function renderPPKPIs(data) {
 
 function renderPPSectorChart(data) {
   const el = document.getElementById('pp-sector-chart'); if(!el) return;
-  const m={}; data.forEach(r=>{m[r.s]=(m[r.s]||0)+1;});
+  const cur = document.getElementById('pp-currency-filter')?.value || 'USD';
+  const rate = {USD:1, HKD:7.8, EUR:0.92}[cur] || 1;
+  const symbol = {USD:'$', HKD:'HK$', EUR:'€'}[cur] || '$';
+  const money = v => symbol + Math.round(Number(v || 0) * rate).toLocaleString() + 'm';
+  const m={}; data.forEach(r=>{m[r.s]=(m[r.s]||0)+(Number(r.sp)||0);});
   const sorted = Object.entries(m).sort((a,b)=>b[1]-a[1]).slice(0,12);
-  const maxC = sorted[0]?.[1]||1;
-  el.innerHTML = sorted.map(([s,c])=>`
+  const maxS = sorted[0]?.[1]||1;
+  if(!sorted.length){
+    el.innerHTML = '<div style="color:#6B7280;font-size:13px;">No sector spend data available.</div>';
+    return;
+  }
+  el.innerHTML = sorted.map(([s,sp])=>`
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
-      <div style="width:140px;text-align:right;font-size:10px;font-weight:600;color:#2e2b28;flex-shrink:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${s}">${s}</div>
+      <div style="width:170px;text-align:right;font-size:10px;font-weight:600;color:#2e2b28;flex-shrink:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${s}">${s}</div>
       <div style="flex:1;height:18px;background:#f3f4f6;border-radius:3px;overflow:hidden">
-        <div style="width:${Math.round(c/maxC*100)}%;height:100%;background:var(--bordeaux);opacity:.75;border-radius:3px;display:flex;align-items:center;justify-content:flex-end;padding-right:5px">
-          ${c>4?`<span style="font-size:9px;font-weight:700;color:white">${c}</span>`:''}
+        <div style="width:${Math.round(sp/maxS*100)}%;height:100%;background:var(--bordeaux);opacity:.75;border-radius:3px;display:flex;align-items:center;justify-content:flex-end;padding-right:5px">
+          ${sp/maxS>.28?`<span style="font-size:9px;font-weight:700;color:white">${money(sp)}</span>`:''}
         </div>
       </div>
-      <div style="width:28px;font-size:10px;font-weight:700;color:var(--bordeaux);flex-shrink:0">${c}</div>
+      <div style="width:70px;font-size:10px;font-weight:700;color:var(--bordeaux);flex-shrink:0;text-align:right">${money(sp)}</div>
     </div>`).join('');
 }
 
@@ -7982,20 +8126,8 @@ function enhanceScrolls(){
   document.querySelectorAll('.table-wrap').forEach(w=>{const rows=w.querySelectorAll('tbody tr').length;if(rows>10)w.classList.add('table-scroll-10')});
 }
 function patchNBBView(){
-  const k=document.getElementById('nbb-kpis');
-  if(k){k.innerHTML=`
-    <div class="kpi-card"><div class="kpi-label">Total Hong Kong</div><div class="kpi-value" style="font-size:22px;color:var(--navy)">$3.2B</div><div class="kpi-meta">Integrated spends</div></div>
-    <div class="kpi-card kpi-green"><div class="kpi-label">Total Wins HK</div><div class="kpi-value pos">+$480m</div><div class="kpi-meta">Wins only</div></div>
-    <div class="kpi-card kpi-red"><div class="kpi-label">Total departures HK</div><div class="kpi-value neg">-$395m</div><div class="kpi-meta">Departures tracked</div></div>
-    <div class="kpi-card kpi-gold"><div class="kpi-label">Total Retention HK</div><div class="kpi-value" style="font-size:22px;color:var(--gold)">$910m</div><div class="kpi-meta">Retained spendings</div></div>`;}
-  const chart=document.getElementById('nbb-chart-wrap');
-  if(chart){chart.innerHTML=`<div class="table-wrap table-scroll-10"><table><thead><tr><th>Type</th><th>Advertiser</th><th>Date</th><th>Integrated Spendings ($m)</th><th>New Agency</th><th>Group</th><th>Previous Agency</th></tr></thead><tbody>
-    <tr><td>HSBC</td><td class="c">+88</td><td>Havas Media</td><td>Havas</td><td>Mindshare</td></tr>
-    <tr><td>Disney</td><td class="c">+76</td><td>Starcom</td><td>Publicis</td><td>OMD</td></tr>
-    <tr><td>AIA</td><td class="c">+64</td><td>PHD</td><td>Omnicom</td><td>Wavemaker</td></tr>
-    <tr><td>Jardine</td><td class="c">+43</td><td>Carat</td><td>Dentsu</td><td>Zenith</td></tr>
-    <tr><td>Trip.com</td><td class="c">+37</td><td>OMD</td><td>Omnicom</td><td>EssenceMediacom</td></tr>
-  </tbody></table></div>`;}
+  // New Biz Balance now has its own Local Market Intel page and renderer.
+  // Keep this legacy patch as a no-op so it does not overwrite the page markup.
 }
 function patchOAVTables(){
   document.querySelectorAll('#view-activity table').forEach(tbl=>{
@@ -8723,7 +8855,6 @@ if(typeof window.switchOAVTab !== 'function'){
   window.renderAwardsView = function(){
     try{
       if(typeof buildAwardsYearChips === 'function') buildAwardsYearChips();
-      if(typeof renderAwardsKPIs === 'function') renderAwardsKPIs();
     }catch(e){}
     recmaRenderLocalAwards();
   };
@@ -9169,6 +9300,10 @@ document.addEventListener('DOMContentLoaded', function(){
     recmaFillSpendsFilters();
     setTimeout(renderSpendsTable, 100);
     setTimeout(renderSpendsTable, 500);
+    if(typeof window.renderRosterTable === 'function'){
+      setTimeout(window.renderRosterTable, 150);
+      setTimeout(window.renderRosterTable, 650);
+    }
   });
 
   document.addEventListener('click', function(e){
