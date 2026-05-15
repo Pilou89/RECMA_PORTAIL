@@ -2038,6 +2038,46 @@ function showOAVTechnicalRemark(slug, btn){
   }
 }
 </style>
+
+<style id="recma-media-intel-group-pills">
+#view-atlas-spends .recma-mi-group-stack,
+#view-atlas-roster .recma-mi-group-stack,
+#view-nbb-report .recma-mi-group-stack,
+#view-pitch-pulse .recma-mi-group-stack,
+#view-atlas-awards .recma-mi-group-stack{
+  display:inline-flex;
+  align-items:center;
+  flex-wrap:wrap;
+  gap:4px 10px;
+}
+#view-atlas-spends .recma-mi-group-label,
+#view-atlas-roster .recma-mi-group-label,
+#view-nbb-report .recma-mi-group-label,
+#view-pitch-pulse .recma-mi-group-label,
+#view-atlas-awards .recma-mi-group-label{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  color:#374151!important;
+  font-size:11px;
+  font-weight:700;
+  white-space:nowrap;
+}
+#view-atlas-spends .recma-mi-colorbar,
+#view-atlas-roster .recma-mi-colorbar,
+#view-nbb-report .recma-mi-colorbar,
+#view-pitch-pulse .recma-mi-colorbar,
+#view-atlas-awards .recma-mi-colorbar{
+  display:inline-block!important;
+  width:10px!important;
+  height:28px!important;
+  min-width:10px!important;
+  border-radius:999px!important;
+  border:1px solid rgba(17,24,39,.22)!important;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.42), 0 1px 2px rgba(17,24,39,.10)!important;
+  flex:0 0 auto!important;
+}
+</style>
 <style id="recma-roster-red-hero-kpi">
 #view-atlas-roster .section-header{
   position:relative;
@@ -2621,6 +2661,7 @@ function showOAVTechnicalRemark(slug, btn){
 <div class="nav-section-title">Local Market Intel</div>
 <div class="nav-item" onclick="showView('atlas-spends',this)"><span class="nav-icon">💰</span> Advertiser Spends</div>
 <div class="nav-item" onclick="showView('atlas-roster',this)"><span class="nav-icon">🏢</span> Media Agency Roster</div>
+<div class="nav-item" onclick="showView('nbb-report',this)"><span class="nav-icon">📈</span> New Biz Balance</div>
 <div class="nav-item" onclick="showView('pitch-pulse',this)"><span class="nav-icon">📊</span> Pitch Pulse</div>
 <div class="nav-item" onclick="showView('atlas-awards',this)"><span class="nav-icon">🏆</span> Awards</div>
 </div>
@@ -3816,9 +3857,9 @@ function showOAVTechnicalRemark(slug, btn){
 <option value="EUR">Currency  EUR</option>
 </select><button class="pp-hero-btn" onclick="applyPPFilters()">Apply</button>
 </div></div>
-<div class="dash-grid-2">
-<div class="table-card"><div class="table-card-header"><div><div class="table-card-title">Sectors</div></div></div><div id="pp-sector-chart" style="padding:18px"></div></div>
-<div class="table-card"><div class="table-card-header"><div><div class="table-card-title">Networks</div></div></div><div id="pp-network-chart" style="padding:18px"></div></div>
+<div class="table-card">
+<div class="table-card-header"><div><div class="table-card-title">Sectors</div><div class="table-card-sub">Total spends by sector</div></div></div>
+<div id="pp-sector-chart" style="padding:18px"></div>
 </div>
 <div class="table-card" style="margin-top:18px">
 <div class="table-card-header">
@@ -3844,6 +3885,56 @@ function showOAVTechnicalRemark(slug, btn){
 <tbody id="pp-tbody"></tbody>
 </table>
 </div>
+</div>
+</div>
+<div class="view" id="view-nbb-report">
+<div class="section-header">
+<div>
+<div class="section-title">New Biz Balance</div>
+<div class="section-subtitle">Hong Kong · wins, departures and retentions by network</div>
+</div>
+<div class="section-badge">Local Market Intel</div>
+<div class="filters-bar">
+<button class="filter-select" type="button" id="nbb-country-filter" style="cursor:default">Country&nbsp;&nbsp;Hong Kong</button>
+<select class="filter-select" id="nbb-group-filter" onchange="renderNBBView()">
+<option value="">Group: All</option>
+<option value="Publicis Media">Publicis Media</option>
+<option value="Havas Media Network">Havas Media Network</option>
+<option value="Omnicom Media Group">Omnicom Media Group</option>
+<option value="dentsu">dentsu</option>
+<option value="WPP Media">WPP Media</option>
+<option value="IPG Mediabrands">IPG Mediabrands</option>
+<option value="Others">Others</option>
+</select>
+<select class="filter-select" id="nbb-outcome-filter" onchange="renderNBBView()">
+<option value="">Outcome: All</option>
+<option value="pos">Positive NBB</option>
+<option value="neg">Negative NBB</option>
+</select>
+<select class="filter-select" id="nbb-currency-filter" onchange="renderNBBView()">
+<option value="USD">Currency USD</option>
+<option value="HKD">Currency HKD</option>
+<option value="EUR">Currency EUR</option>
+</select>
+</div></div>
+<div class="kpi-grid" id="nbb-kpis" style="grid-template-columns:repeat(4,1fr);margin-bottom:18px"></div>
+<div class="table-card">
+<div class="table-card-header">
+<div>
+<div class="table-card-title">New Biz Balance · Hong Kong</div>
+<div class="table-card-sub" id="nbb-count">— networks</div>
+</div>
+</div>
+<div class="table-wrap">
+<table>
+<thead><tr><th>Rank</th><th onclick="sortNBB('agency')">Agency</th><th onclick="sortNBB('group')">Group</th><th onclick="sortNBB('wins')">Wins</th><th onclick="sortNBB('departures')">Departures</th><th onclick="sortNBB('retentions')">Retentions</th><th onclick="sortNBB('nbb')">NBB</th><th>Win rate</th></tr></thead>
+<tbody id="nbb-tbody"></tbody>
+</table>
+</div>
+</div>
+<div class="table-card" style="margin-top:18px">
+<div class="table-card-header"><div><div class="table-card-title">Wins vs Departures</div><div class="table-card-sub">Integrated spends by network · positive and negative movement</div></div></div>
+<div id="nbb-chart-wrap" style="padding:18px"></div>
 </div>
 </div>
 <div class="view" id="view-atlas-awards">
@@ -3881,8 +3972,6 @@ function showOAVTechnicalRemark(slug, btn){
     <option value="low">Low awards</option>
   </select>
 </div></div>
-<div class="kpi-grid"
- id="awards-kpis" style="grid-template-columns:repeat(4,1fr);margin-bottom:18px"></div>
 <div class="table-card">
 <div class="table-card-header">
 <div>
@@ -5726,7 +5815,11 @@ font-size:27px;
 }
 </style>
 
-</head><body>${body.innerHTML}<script>window.onload=()=>window.print()<\/script>
+</head><body>${body.innerHTML}<script>window.onload=()=>window.print()<\/script></body></html>`);
+    win.document.close();
+  }
+}
+</script>
 <script id="recma-local-market-intel-restore-js">
 (function(){
   function uniq(arr){return [...new Set(arr.filter(Boolean))].sort();}
@@ -5787,6 +5880,7 @@ font-size:27px;
         if(id === 'atlas-spends' && typeof renderSpendsTable === 'function') { if(window.recmaFillSpendsFilters) recmaFillSpendsFilters(); renderSpendsTable(); }
         if(id === 'atlas-roster' && typeof renderRosterTable === 'function') renderRosterTable();
         if(id === 'atlas-awards' && typeof renderAwardsView === 'function') renderAwardsView();
+        if(id === 'nbb-report' && typeof renderNBBView === 'function') renderNBBView();
 
         if(id === 'pitch-pulse'){
           if(typeof initPPFilters === 'function') initPPFilters();
@@ -6336,7 +6430,21 @@ function renderMktLocal() {
   function buildSection(crits, label, color) {
     if(!crits.length) return '';
     return `
-      <tr><td>${c.name}</td>
+      <tr style="background:var(--gray-50)">
+        <td colspan="${selected.length + 2}" style="padding:8px 12px;font-size:10px;font-weight:800;color:${color};text-transform:uppercase;letter-spacing:1px">${label}</td>
+      </tr>
+      ${crits.map(c => {
+        const scores = selected.map(ag => ag.s?.[c.code] ?? 0);
+        const max = Math.max(...scores);
+        const cells = selected.map(ag => {
+          const score = ag.s?.[c.code] ?? 0;
+          const isLeader = score === max && max > 0;
+          const isYou = ag.isYou;
+          return `<td style="padding:8px;text-align:center;font-size:12px;font-weight:${isYou?800:700};color:${isYou?'var(--bordeaux)':'var(--navy)'}">${score>0?'+':''}${score}${isLeader?' ★':''}</td>`;
+        }).join('');
+        return `<tr style="border-bottom:1px solid var(--gray-100)">
+          <td style="padding:8px 12px;font-size:10px;font-weight:800;color:var(--gray-500)">${c.code}</td>
+          <td style="padding:8px 12px;font-size:11px;font-weight:600;color:var(--text)">${c.name}</td>
           ${cells}
         </tr>`;
       }).join('')}`;
@@ -6990,6 +7098,105 @@ const ROSTER_GROUP_TEXT = {
   'Independent':'#374151'
 };
 
+function recmaEscHtml(value) {
+  return String(value ?? '').replace(/[&<>"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]));
+}
+
+function recmaMediaIntelGroupColor(group) {
+  const raw = String(group || '').trim();
+  const normalized = raw
+    .replace(/Omnicom Media Gr\.?/i, 'Omnicom Media Group')
+    .replace(/OMD OM Group/i, 'Omnicom Media Group')
+    .replace(/GroupM/i, 'WPP Media')
+    .replace(/^Havas$/i, 'Havas Media Network')
+    .replace(/^Publicis$/i, 'Publicis Media');
+  const colorMaps = [
+    typeof ROSTER_GROUP_COLORS !== 'undefined' ? ROSTER_GROUP_COLORS : {},
+    typeof GROUP_COLORS_NBB !== 'undefined' ? GROUP_COLORS_NBB : {},
+    typeof AWARDS_GROUP_COLORS !== 'undefined' ? AWARDS_GROUP_COLORS : {},
+    { 'Omnicom Media Group':'#FFE699', 'Publicis Media':'#FFEADD', 'dentsu':'#E2F0D9', 'WPP Media':'#FFE4FF', 'Havas Media Network':'#DCB9FF', 'IPG Mediabrands':'#d1fae5', 'Independent':'#e5e7eb', 'Others':'#e5e7eb', 'Local Agencies':'#e5e7eb' }
+  ];
+  for(const map of colorMaps){
+    if(map[normalized]) return map[normalized];
+    if(map[raw]) return map[raw];
+  }
+  return '#e5e7eb';
+}
+
+function recmaMediaIntelGroupPill(groups) {
+  const parts = String(groups || '—').split(',').map(g => g.trim()).filter(Boolean);
+  const labels = (parts.length ? parts : ['—']).map(group => {
+    const color = recmaMediaIntelGroupColor(group);
+    return `<span class="recma-mi-group-label" style="display:inline-flex;align-items:center;gap:7px;color:#374151!important;font-size:11px;font-weight:700;white-space:nowrap"><span class="recma-mi-colorbar" style="display:inline-block!important;width:10px!important;height:28px!important;min-width:10px!important;border-radius:999px!important;border:1px solid rgba(17,24,39,.22)!important;box-shadow:inset 0 0 0 1px rgba(255,255,255,.42),0 1px 2px rgba(17,24,39,.10)!important;background:${color}!important"></span><span>${recmaEscHtml(group)}</span></span>`;
+  });
+  return `<span class="recma-mi-group-stack">${labels.join('')}</span>`;
+}
+
+// Build Agency Roster data from the restored Advertiser Spends dataset.
+// The original static ROSTER_DATA block is not present in this file, so the roster
+// chart must derive its agency totals from SPENDS_DATA at render time.
+var ROSTER_DATA = [];
+
+function splitRosterField(value) {
+  return String(value || '')
+    .split(',')
+    .map(v => v.trim())
+    .filter(Boolean);
+}
+
+function normalizeRosterAgency(name) {
+  const clean = String(name || '').trim();
+  if(!clean) return 'Unknown agency';
+  if(/^havas$/i.test(clean)) return 'Havas Media';
+  return clean;
+}
+
+function normalizeRosterGroup(group) {
+  const clean = String(group || '').trim();
+  if(!clean) return 'Independent';
+  if(/^wpp$/i.test(clean) || /^groupm$/i.test(clean)) return 'WPP Media';
+  if(/^omd om group$/i.test(clean) || /^omnicom$/i.test(clean)) return 'Omnicom Media Group';
+  if(/^havas$/i.test(clean)) return 'Havas Media Network';
+  if(/^publicis$/i.test(clean)) return 'Publicis Media';
+  if(/^dentsu$/i.test(clean)) return 'dentsu';
+  return clean;
+}
+
+function recmaBuildRosterDataFromSpends() {
+  const rows = Array.isArray(window.SPENDS_DATA) ? window.SPENDS_DATA : [];
+  const byAgency = {};
+
+  rows.forEach(r => {
+    const agencies = splitRosterField(r.agency);
+    const groups = splitRosterField(r.group);
+    if(!agencies.length) return;
+
+    const value = Number(r.spends) || 0;
+    const splitValue = value / agencies.length;
+
+    agencies.forEach((agencyName, idx) => {
+      const agency = normalizeRosterAgency(agencyName);
+      const group = normalizeRosterGroup(groups[idx] || groups[0] || 'Independent');
+      const key = agency + '||' + group;
+      if(!byAgency[key]) {
+        byAgency[key] = {agency, group, total:0, count:0};
+      }
+      byAgency[key].total += splitValue;
+      byAgency[key].count += 1;
+    });
+  });
+
+  return Object.values(byAgency)
+    .map(r => ({...r, total: Math.round(r.total * 10) / 10}))
+    .filter(r => r.total > 0)
+    .sort((a,b) => b.total - a.total);
+}
+
+function recmaRefreshRosterData() {
+  ROSTER_DATA = recmaBuildRosterDataFromSpends();
+  return ROSTER_DATA;
+}
+
 // Sector totals derived from SPENDS_DATA
 function getRosterSectorData() {
   const map = {};
@@ -7005,6 +7212,16 @@ let rosterSortKey='total', rosterSortDir=-1;
 let rosterView='bar'; // 'bar' | 'table'
 
 function renderRosterTable() {
+  recmaRefreshRosterData();
+  if(!ROSTER_DATA.length) {
+    const setKPI = (id,val) => { const el=document.getElementById(id); if(el) el.textContent=val; };
+    setKPI('roster-kpi-total', '—');
+    setKPI('roster-kpi-count', '0');
+    const tbody = document.getElementById('roster-tbody');
+    if(tbody) tbody.innerHTML = '<tr><td colspan="6" style="padding:14px;color:var(--gray-600)">No roster data available.</td></tr>';
+    return;
+  }
+
   // Render KPIs
   const totalOAV = ROSTER_DATA.reduce((s,r)=>s+r.total,0);
   const havasRow = ROSTER_DATA.find(r=>r.group==='Havas Media Network');
@@ -7136,7 +7353,7 @@ function renderRosterTableRows(totalOAV) {
         ${r.agency}${isH?' ← You':''}
       </td>
       <td style="padding:9px 12px">
-        <span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;background:${gc}18;color:${gc}">${r.group}</span>
+        ${recmaMediaIntelGroupPill(r.group)}
       </td>
       <td style="padding:9px 12px;text-align:right">
         <div style="display:flex;align-items:center;gap:6px;justify-content:flex-end">
@@ -7168,6 +7385,7 @@ function rosterShareView(view) {
 function sortRoster(key) {
   rosterSortDir = rosterSortKey===key ? -rosterSortDir : -1;
   rosterSortKey = key;
+  recmaRefreshRosterData();
   const totalOAV = ROSTER_DATA.reduce((s,r)=>s+r.total,0);
   renderRosterTableRows(totalOAV);
 }
@@ -7236,36 +7454,32 @@ function renderSectorChart() {
 
 /* ══ NEW BUSINESS BALANCE ══ */
 const NBB_NETWORK_DATA = [
-  {agency:'Starcom',group:'Publicis Media',wins:3381.3,departures:-627.3,retentions:716.9,nbb:2754.0},
-  {agency:'Other Entity',group:'Publicis Media',wins:2969.8,departures:-217.6,retentions:175.7,nbb:2752.1},
-  {agency:'Spark Foundry',group:'Publicis Media',wins:2516.7,departures:-363.0,retentions:369.6,nbb:2153.7},
-  {agency:'Initiative',group:'IPG Mediabrands',wins:2220.8,departures:-483.2,retentions:1215.2,nbb:1737.6},
-  {agency:'Havas Media',group:'Havas Media Network',wins:2328.4,departures:-778.3,retentions:806.8,nbb:1550.1},
-  {agency:'Zenith',group:'Publicis Media',wins:2217.1,departures:-1153.3,retentions:839.2,nbb:1063.8},
-  {agency:'Others',group:'Others',wins:2837.4,departures:-1802.7,retentions:725.7,nbb:1034.7},
-  {agency:'iProspect',group:'dentsu',wins:1258.3,departures:-332.9,retentions:403.4,nbb:925.4},
-  {agency:'PHD',group:'Omnicom Media Group',wins:1721.8,departures:-829.1,retentions:168.4,nbb:892.7},
-  {agency:'dentsu X',group:'dentsu',wins:853.6,departures:-538.9,retentions:645.0,nbb:314.7},
-  {agency:'OMD',group:'Omnicom Media Group',wins:1495.7,departures:-1412.5,retentions:419.9,nbb:83.2},
-  {agency:'Carat',group:'dentsu',wins:947.3,departures:-1002.3,retentions:797.0,nbb:-54.9},
-  {agency:'Arena',group:'Havas Media Network',wins:67.5,departures:-165.4,retentions:167.3,nbb:-98.0},
-  {agency:'Hearts & Science',group:'Omnicom Media Group',wins:450.0,departures:-594.4,retentions:190.1,nbb:-144.4},
-  {agency:'Mindshare',group:'GroupM',wins:1171.5,departures:-1844.3,retentions:727.8,nbb:-672.8},
-  {agency:'UM',group:'IPG Mediabrands',wins:953.2,departures:-1709.5,retentions:555.7,nbb:-756.2},
-  {agency:'Wavemaker',group:'GroupM',wins:1113.1,departures:-1998.0,retentions:670.5,nbb:-884.8},
-  {agency:'EssenceMediacom',group:'GroupM',wins:1332.7,departures:-3775.8,retentions:515.3,nbb:-2443.1},
+  {country:'Hong Kong',agency:'Spark Foundry',group:'Publicis Media',wins:49,departures:-7,retentions:0,nbb:42,moves:'3/1'},
+  {country:'Hong Kong',agency:'dentsu X',group:'dentsu',wins:28,departures:-1,retentions:46,nbb:27,moves:'3/1'},
+  {country:'Hong Kong',agency:'Starcom',group:'Publicis Media',wins:20,departures:-1,retentions:54,nbb:20,moves:'7/1'},
+  {country:'Hong Kong',agency:'Hearts & Science',group:'Omnicom Media Group',wins:21,departures:-2,retentions:0,nbb:19,moves:'3/2'},
+  {country:'Hong Kong',agency:'PHD',group:'Omnicom Media Group',wins:26,departures:-9,retentions:-10,nbb:17,moves:'9/1'},
+  {country:'Hong Kong',agency:'Zenith',group:'Publicis Media',wins:24,departures:-9,retentions:12,nbb:15,moves:'11/2'},
+  {country:'Hong Kong',agency:'UM incl. Initiative',group:'Omnicom Media Group',wins:25,departures:-12,retentions:0,nbb:13,moves:'6/2'},
+  {country:'Hong Kong',agency:'OMD',group:'Omnicom Media Group',wins:25,departures:-19,retentions:-2,nbb:6,moves:'8/6'},
+  {country:'Hong Kong',agency:'EssenceMediacom',group:'WPP Media',wins:11,departures:-7,retentions:0,nbb:4,moves:'7/2'},
+  {country:'Hong Kong',agency:'iProspect',group:'dentsu',wins:2,departures:0,retentions:0,nbb:2,moves:'4/0'},
+  {country:'Hong Kong',agency:'Havas Media',group:'Havas Media Network',wins:10,departures:-10,retentions:1,nbb:0,moves:'8/3'},
+  {country:'Hong Kong',agency:'Wavemaker',group:'WPP Media',wins:8,departures:-17,retentions:0,nbb:-8,moves:'2/4'},
+  {country:'Hong Kong',agency:'Carat',group:'dentsu',wins:9,departures:-17,retentions:2,nbb:-8,moves:'1/5'},
+  {country:'Hong Kong',agency:'Mindshare',group:'WPP Media',wins:3,departures:-14,retentions:0,nbb:-11,moves:'2/9'},
 ];
 
 const GROUP_COLORS_NBB = {
   'Publicis Media':'#FFEADD',     'Havas Media Network':'#DCB9FF',
   'Omnicom Media Group':'#FFE699','dentsu':'#E2F0D9',
-  'GroupM':'#FFE4FF',             'IPG Mediabrands':'#d1fae5',
+  'WPP Media':'#FFE4FF',           'IPG Mediabrands':'#d1fae5',
   'Others':'#e5e7eb'
 };
 const GROUP_TEXT_NBB = {
   'Publicis Media':'#8B4513',     'Havas Media Network':'#4a1a7a',
   'Omnicom Media Group':'#7a6200','dentsu':'#2d5a1b',
-  'GroupM':'#6b007a',             'IPG Mediabrands':'#065f46',
+  'WPP Media':'#6b007a',          'IPG Mediabrands':'#065f46',
   'Others':'#374151'
 };
 
@@ -7277,51 +7491,76 @@ function renderNBBView() {
   renderNBBChart();
 }
 
+function nbbCurrency() {
+  const cur = document.getElementById('nbb-currency-filter')?.value || 'USD';
+  const rate = {USD:1, HKD:7.8, EUR:0.92}[cur] || 1;
+  const symbol = {USD:'$', HKD:'HK$', EUR:'€'}[cur] || '$';
+  return {cur, rate, symbol};
+}
+
+function nbbMoney(value, opts={}) {
+  const {rate, symbol} = nbbCurrency();
+  const raw = Number(value || 0);
+  const converted = Math.round(Math.abs(raw) * rate * 10) / 10;
+  const sign = raw > 0 && opts.plus ? '+' : raw < 0 ? '-' : '';
+  return sign + symbol + converted.toLocaleString() + 'm';
+}
+
+function getFilteredNBBRows() {
+  const country = 'Hong Kong';
+  const grpFilt = document.getElementById('nbb-group-filter')?.value || '';
+  const outFilt = document.getElementById('nbb-outcome-filter')?.value || '';
+  return NBB_NETWORK_DATA.filter(d =>
+    d.country === country &&
+    (!grpFilt || d.group===grpFilt) &&
+    (!outFilt || (outFilt==='pos' ? d.nbb>=0 : d.nbb<0))
+  );
+}
+
 function renderNBBKPIs() {
   const el = document.getElementById('nbb-kpis');
   if(!el) return;
-  const havas = NBB_NETWORK_DATA.find(d=>d.agency==='Havas Media');
-  if(!havas) return;
-  const rank = NBB_NETWORK_DATA.filter(d=>d.nbb>havas.nbb).length + 1;
+  const rows = getFilteredNBBRows();
+  const allLocal = NBB_NETWORK_DATA.filter(d=>d.country==='Hong Kong');
+  const havas = allLocal.find(d=>d.agency==='Havas Media');
+  const wins = rows.reduce((s,d)=>s+(Number(d.wins)||0),0);
+  const departures = rows.reduce((s,d)=>s+Math.abs(Number(d.departures)||0),0);
+  const retentions = rows.reduce((s,d)=>s+(Number(d.retentions)||0),0);
+  const nbb = rows.reduce((s,d)=>s+(Number(d.nbb)||0),0);
+  const rank = havas ? allLocal.filter(d=>d.nbb>havas.nbb).length + 1 : '—';
   el.innerHTML = `
     <div class="kpi-card" style="border-top:3px solid var(--green)">
-      <div class="kpi-label">Havas Wins</div>
-      <div class="kpi-value pos" style="font-size:22px">$${havas.wins}m</div>
-      <div class="kpi-meta">Total integrated spends won</div>
+      <div class="kpi-label">Total Wins</div>
+      <div class="kpi-value pos" style="font-size:22px">${nbbMoney(wins)}</div>
+      <div class="kpi-meta">Hong Kong · selected filters</div>
     </div>
     <div class="kpi-card" style="border-top:3px solid var(--red)">
-      <div class="kpi-label">Havas Departures</div>
-      <div class="kpi-value neg" style="font-size:22px">$${havas.departures}m</div>
-      <div class="kpi-meta">Total integrated spends lost</div>
+      <div class="kpi-label">Total Departures</div>
+      <div class="kpi-value neg" style="font-size:22px">-${nbbMoney(departures).replace(/^[-+]/,'')}</div>
+      <div class="kpi-meta">Hong Kong · absolute lost spends</div>
     </div>
     <div class="kpi-card" style="border-top:3px solid var(--bordeaux)">
-      <div class="kpi-label">Havas NBB</div>
-      <div class="kpi-value pos" style="font-size:22px;color:var(--bordeaux)">$${havas.nbb}m</div>
-      <div class="kpi-meta">Net Business Balance · Wins + Departures</div>
+      <div class="kpi-label">Net Biz Balance</div>
+      <div class="kpi-value" style="font-size:22px;color:${nbb>=0?'var(--green)':'var(--red)'}">${nbbMoney(nbb,{plus:true})}</div>
+      <div class="kpi-meta">Wins minus departures</div>
     </div>
     <div class="kpi-card" style="border-top:3px solid var(--navy)">
       <div class="kpi-label">Havas Rank</div>
       <div class="kpi-value" style="font-size:28px;color:var(--navy)">#${rank}</div>
-      <div class="kpi-meta">of ${NBB_NETWORK_DATA.length} tracked networks</div>
+      <div class="kpi-meta">${havas ? nbbMoney(havas.nbb,{plus:true}) : '—'} NBB · Hong Kong</div>
     </div>`;
 }
 
 function renderNBBTable() {
   const tbody = document.getElementById('nbb-tbody');
   if(!tbody) return;
-  const grpFilt = document.getElementById('nbb-group-filter')?.value || '';
-  const outFilt = document.getElementById('nbb-outcome-filter')?.value || '';
-
-  let rows = NBB_NETWORK_DATA.filter(d =>
-    (!grpFilt || d.group===grpFilt) &&
-    (!outFilt || (outFilt==='pos' ? d.nbb>=0 : d.nbb<0))
-  ).sort((a,b)=>{
+  let rows = getFilteredNBBRows().sort((a,b)=>{
     const av=a[nbbSortKey], bv=b[nbbSortKey];
-    return typeof av==='number' ? nbbSortDir*(av-bv) : nbbSortDir*(av<bv?-1:av>bv?1:0);
+    return typeof av==='number' ? nbbSortDir*(av-bv) : nbbSortDir*(String(av||'').localeCompare(String(bv||'')));
   });
 
   const cnt = document.getElementById('nbb-count');
-  if(cnt) cnt.textContent = `${rows.length} networks`;
+  if(cnt) cnt.textContent = `${rows.length} Hong Kong networks`;
 
   tbody.innerHTML = rows.map((d,i)=>{
     const isHavas = d.group==='Havas Media Network';
@@ -7335,12 +7574,12 @@ function renderNBBTable() {
         ${d.agency}${isHavas?' ← You':''}
       </td>
       <td style="padding:9px 12px">
-        <span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;background:${gc};color:${gt};border:1px solid ${gt}30">${d.group}</span>
+        ${recmaMediaIntelGroupPill(d.group)}
       </td>
-      <td style="padding:9px 12px;text-align:right;font-size:12px;font-weight:600;color:var(--green)">+$${d.wins}m</td>
-      <td style="padding:9px 12px;text-align:right;font-size:12px;font-weight:600;color:var(--red)">$${d.departures}m</td>
-      <td style="padding:9px 12px;text-align:right;font-size:12px;color:var(--gray-600)">$${d.retentions}m</td>
-      <td style="padding:9px 12px;text-align:right;font-size:14px;font-weight:800;color:${nbbCol}">${d.nbb>0?'+':''}$${d.nbb}m</td>
+      <td style="padding:9px 12px;text-align:right;font-size:12px;font-weight:600;color:var(--green)">${nbbMoney(d.wins)}</td>
+      <td style="padding:9px 12px;text-align:right;font-size:12px;font-weight:600;color:var(--red)">${nbbMoney(d.departures)}</td>
+      <td style="padding:9px 12px;text-align:right;font-size:12px;color:var(--gray-600)">${nbbMoney(d.retentions,{plus:true})}</td>
+      <td style="padding:9px 12px;text-align:right;font-size:14px;font-weight:800;color:${nbbCol}">${nbbMoney(d.nbb,{plus:true})}</td>
       <td style="padding:9px 12px;text-align:right;font-size:11px;color:var(--gray-600)">${winRate}</td>
     </tr>`;
   }).join('');
@@ -7349,13 +7588,13 @@ function renderNBBTable() {
 function sortNBB(key) {
   nbbSortDir = nbbSortKey===key ? -nbbSortDir : -1;
   nbbSortKey = key;
-  renderNBBTable();
+  renderNBBView();
 }
 
 function renderNBBChart() {
   const el = document.getElementById('nbb-chart-wrap');
   if(!el) return;
-  const sorted = [...NBB_NETWORK_DATA].sort((a,b)=>b.nbb-a.nbb);
+  const sorted = getFilteredNBBRows().sort((a,b)=>b.nbb-a.nbb);
   const maxAbs = Math.max(...sorted.map(d=>Math.max(Math.abs(d.wins),Math.abs(d.departures))),1);
   el.innerHTML = sorted.map(d=>{
     const isHavas = d.group==='Havas Media Network';
@@ -7373,7 +7612,7 @@ function renderNBBChart() {
           <div style="width:${depPct}%;height:100%;background:var(--red);opacity:.75;border-radius:3px"></div>
         </div>
       </div>
-      <div style="width:72px;flex-shrink:0;text-align:right;font-size:11px;font-weight:700;color:${nbbCol}">${d.nbb>0?'+':''}$${d.nbb}m</div>
+      <div style="width:84px;flex-shrink:0;text-align:right;font-size:11px;font-weight:700;color:${nbbCol}">${nbbMoney(d.nbb,{plus:true})}</div>
     </div>`;
   }).join('') + `<div style="display:flex;gap:16px;margin-top:10px;font-size:10px;color:var(--gray-400)">
     <span><span style="display:inline-block;width:10px;height:10px;background:var(--green);border-radius:2px;margin-right:4px;opacity:.75"></span>Wins</span>
@@ -7422,7 +7661,6 @@ let awardsSortKey = 'pts', awardsSortDir = -1;
 
 function renderAwardsView() {
   buildAwardsYearChips();
-  renderAwardsKPIs();
   renderAwardsTable();
   drawAwardsChart();
 }
@@ -7510,7 +7748,7 @@ function renderAwardsTable() {
       <td style="padding:9px 12px"><span class="rank-b${i<3?' top':''}">${i+1}</span></td>
       <td style="padding:9px 12px;font-size:12px;font-weight:${isHavas?700:500};color:${isHavas?'var(--bordeaux)':'var(--text)'}">
         ${d.agency}${isHavas?' ← You':''}
-        <span style="margin-left:6px;font-size:9px;font-weight:700;padding:1px 6px;border-radius:8px;background:${gcol}18;color:${gcol}">${d.group}</span>
+        <span style="margin-left:8px">${recmaMediaIntelGroupPill(d.group)}</span>
       </td>
       <td style="padding:9px 12px">
         <div style="display:flex;align-items:center;gap:6px">
@@ -7664,7 +7902,6 @@ function renderPPAll() {
   const data = ppFiltered.length ? ppFiltered : PP_ALL_DATA;
   renderPPKPIs(data);
   renderPPSectorChart(data);
-  renderPPNetworkChart(data);
   renderPPTable(data);
   const cnt = document.getElementById('pp-count');
   if(cnt) cnt.textContent = data.length.toLocaleString() + ' advertisers';
@@ -7703,18 +7940,26 @@ function renderPPKPIs(data) {
 
 function renderPPSectorChart(data) {
   const el = document.getElementById('pp-sector-chart'); if(!el) return;
-  const m={}; data.forEach(r=>{m[r.s]=(m[r.s]||0)+1;});
+  const cur = document.getElementById('pp-currency-filter')?.value || 'USD';
+  const rate = {USD:1, HKD:7.8, EUR:0.92}[cur] || 1;
+  const symbol = {USD:'$', HKD:'HK$', EUR:'€'}[cur] || '$';
+  const money = v => symbol + Math.round(Number(v || 0) * rate).toLocaleString() + 'm';
+  const m={}; data.forEach(r=>{m[r.s]=(m[r.s]||0)+(Number(r.sp)||0);});
   const sorted = Object.entries(m).sort((a,b)=>b[1]-a[1]).slice(0,12);
-  const maxC = sorted[0]?.[1]||1;
-  el.innerHTML = sorted.map(([s,c])=>`
+  const maxS = sorted[0]?.[1]||1;
+  if(!sorted.length){
+    el.innerHTML = '<div style="color:#6B7280;font-size:13px;">No sector spend data available.</div>';
+    return;
+  }
+  el.innerHTML = sorted.map(([s,sp])=>`
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
-      <div style="width:140px;text-align:right;font-size:10px;font-weight:600;color:#2e2b28;flex-shrink:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${s}">${s}</div>
+      <div style="width:170px;text-align:right;font-size:10px;font-weight:600;color:#2e2b28;flex-shrink:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${s}">${s}</div>
       <div style="flex:1;height:18px;background:#f3f4f6;border-radius:3px;overflow:hidden">
-        <div style="width:${Math.round(c/maxC*100)}%;height:100%;background:var(--bordeaux);opacity:.75;border-radius:3px;display:flex;align-items:center;justify-content:flex-end;padding-right:5px">
-          ${c>4?`<span style="font-size:9px;font-weight:700;color:white">${c}</span>`:''}
+        <div style="width:${Math.round(sp/maxS*100)}%;height:100%;background:var(--bordeaux);opacity:.75;border-radius:3px;display:flex;align-items:center;justify-content:flex-end;padding-right:5px">
+          ${sp/maxS>.28?`<span style="font-size:9px;font-weight:700;color:white">${money(sp)}</span>`:''}
         </div>
       </div>
-      <div style="width:28px;font-size:10px;font-weight:700;color:var(--bordeaux);flex-shrink:0">${c}</div>
+      <div style="width:70px;font-size:10px;font-weight:700;color:var(--bordeaux);flex-shrink:0;text-align:right">${money(sp)}</div>
     </div>`).join('');
 }
 
@@ -7751,7 +7996,7 @@ function renderPPTable(data) {
       <td style="padding:8px 12px;font-size:11px;color:var(--gray-600)">${r.s||'—'}</td>
       <td style="padding:8px 12px;text-align:right;font-size:12px;font-weight:700;color:var(--navy)">$${r.sp}m</td>
       <td style="padding:8px 12px;font-size:11px;font-weight:${isH(r)?700:400};color:${isH(r)?'var(--bordeaux)':'var(--text)'}">${r.n||'—'}</td>
-      <td style="padding:8px 12px;font-size:11px;color:var(--gray-600)">${r.g||'—'}</td>
+      <td style="padding:8px 12px;font-size:11px;color:var(--gray-600)">${recmaMediaIntelGroupPill(r.g||'—')}</td>
       <td style="padding:8px 12px"><span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:10px;background:${r.t==='Global'?'#dbeafe':r.t==='Regional'?'#d1fae5':'#f3f4f6'};color:${r.t==='Global'?'#1d4ed8':r.t==='Regional'?'#065f46':'#374151'}">${r.t||'—'}</span></td>
       <td style="padding:8px 12px;font-size:11px;color:var(--gray-600)">${r.c||'—'}</td>
       <td style="padding:8px 12px;font-size:11px;color:var(--gray-600)">${r.de||'—'}</td>
@@ -7982,20 +8227,8 @@ function enhanceScrolls(){
   document.querySelectorAll('.table-wrap').forEach(w=>{const rows=w.querySelectorAll('tbody tr').length;if(rows>10)w.classList.add('table-scroll-10')});
 }
 function patchNBBView(){
-  const k=document.getElementById('nbb-kpis');
-  if(k){k.innerHTML=`
-    <div class="kpi-card"><div class="kpi-label">Total Hong Kong</div><div class="kpi-value" style="font-size:22px;color:var(--navy)">$3.2B</div><div class="kpi-meta">Integrated spends</div></div>
-    <div class="kpi-card kpi-green"><div class="kpi-label">Total Wins HK</div><div class="kpi-value pos">+$480m</div><div class="kpi-meta">Wins only</div></div>
-    <div class="kpi-card kpi-red"><div class="kpi-label">Total departures HK</div><div class="kpi-value neg">-$395m</div><div class="kpi-meta">Departures tracked</div></div>
-    <div class="kpi-card kpi-gold"><div class="kpi-label">Total Retention HK</div><div class="kpi-value" style="font-size:22px;color:var(--gold)">$910m</div><div class="kpi-meta">Retained spendings</div></div>`;}
-  const chart=document.getElementById('nbb-chart-wrap');
-  if(chart){chart.innerHTML=`<div class="table-wrap table-scroll-10"><table><thead><tr><th>Type</th><th>Advertiser</th><th>Date</th><th>Integrated Spendings ($m)</th><th>New Agency</th><th>Group</th><th>Previous Agency</th></tr></thead><tbody>
-    <tr><td>HSBC</td><td class="c">+88</td><td>Havas Media</td><td>Havas</td><td>Mindshare</td></tr>
-    <tr><td>Disney</td><td class="c">+76</td><td>Starcom</td><td>Publicis</td><td>OMD</td></tr>
-    <tr><td>AIA</td><td class="c">+64</td><td>PHD</td><td>Omnicom</td><td>Wavemaker</td></tr>
-    <tr><td>Jardine</td><td class="c">+43</td><td>Carat</td><td>Dentsu</td><td>Zenith</td></tr>
-    <tr><td>Trip.com</td><td class="c">+37</td><td>OMD</td><td>Omnicom</td><td>EssenceMediacom</td></tr>
-  </tbody></table></div>`;}
+  // New Biz Balance now has its own Local Market Intel page and renderer.
+  // Keep this legacy patch as a no-op so it does not overwrite the page markup.
 }
 function patchOAVTables(){
   document.querySelectorAll('#view-activity table').forEach(tbl=>{
@@ -8534,7 +8767,7 @@ if(typeof window.switchOAVTab !== 'function'){
         <h3>${d.agency}</h3>
         <span style="width:9px;height:22px;border-radius:999px;background:${color};display:inline-block;border:1px solid rgba(0,0,0,.12)"></span>
       </div>
-      <p style="font-weight:800;color:${color};margin-bottom:10px">${d.group}</p>
+      <p style="margin-bottom:10px">${recmaMediaIntelGroupPill(d.group)}</p>
       <div class="roster-detail-kpis">
         <div class="roster-detail-kpi"><small>Rank</small><b>#${rank}</b></div>
         <div class="roster-detail-kpi"><small>OAV</small><b>${money(d.total)}</b></div>
@@ -8677,7 +8910,7 @@ if(typeof window.switchOAVTab !== 'function'){
         return `<tr style="${isHavas?'background:#fdf7f8;border-left:3px solid var(--bordeaux)':''};border-bottom:1px solid var(--gray-100)">
           <td style="padding:9px 12px"><span class="rank-b${i<3?' top':''}">${i+1}</span></td>
           <td style="padding:9px 12px;font-size:12px;font-weight:${isHavas?700:500};color:${isHavas?'var(--bordeaux)':'var(--text)'}">${d.agency}${isHavas?' ← You':''}</td>
-          <td style="padding:9px 12px"><span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;background:${gcol}18;color:${gcol}">${d.group}</span></td>
+          <td style="padding:9px 12px">${recmaMediaIntelGroupPill(d.group)}</td>
           <td style="padding:9px 12px">
             <div style="display:flex;align-items:center;gap:6px">
               <div style="flex:1;height:16px;background:var(--gray-100);border-radius:3px;overflow:hidden;max-width:90px">
@@ -8708,7 +8941,7 @@ if(typeof window.switchOAVTab !== 'function'){
         return `<tr style="${isHavas?'background:#fdf7f8;border-left:3px solid var(--bordeaux)':''};border-bottom:1px solid var(--gray-100)">
           <td style="padding:9px 12px;font-size:12px;font-weight:700">${d.advertiser}</td>
           <td style="padding:9px 12px;font-size:12px">${d.agency}</td>
-          <td style="padding:9px 12px;font-size:11px;color:var(--gray-600)">${d.group}</td>
+          <td style="padding:9px 12px;font-size:11px;color:var(--gray-600)">${recmaMediaIntelGroupPill(d.group)}</td>
           <td class="c" style="padding:9px 12px;font-weight:900;color:var(--bordeaux)">${d.awards}</td>
           <td class="c" style="padding:9px 12px;font-weight:800">${d.pts}</td>
         </tr>`;
@@ -8723,7 +8956,6 @@ if(typeof window.switchOAVTab !== 'function'){
   window.renderAwardsView = function(){
     try{
       if(typeof buildAwardsYearChips === 'function') buildAwardsYearChips();
-      if(typeof renderAwardsKPIs === 'function') renderAwardsKPIs();
     }catch(e){}
     recmaRenderLocalAwards();
   };
@@ -9141,7 +9373,7 @@ document.addEventListener('DOMContentLoaded', function(){
         <td style="padding:9px 12px;font-size:12px;color:var(--gray-600)">${r.parent}</td>
         <td style="padding:9px 12px;text-align:right;font-size:12px;font-weight:700;color:var(--navy)">${converted(r.spends)}</td>
         <td style="padding:9px 12px;font-size:12px;color:${isHavas?'var(--bordeaux)':'var(--text)'};font-weight:${isHavas?700:400}">${r.agency}</td>
-        <td style="padding:9px 12px;font-size:12px;color:var(--gray-600)">${r.group}</td>
+        <td style="padding:9px 12px;font-size:12px;color:var(--gray-600)">${recmaMediaIntelGroupPill(r.group)}</td>
         <td style="padding:9px 12px;font-size:11px;color:var(--gray-600)">Hong Kong</td>
         <td style="padding:9px 12px;font-size:11px;color:var(--gray-600)">${r.sector || '—'}</td>
       </tr>`;
@@ -9169,6 +9401,10 @@ document.addEventListener('DOMContentLoaded', function(){
     recmaFillSpendsFilters();
     setTimeout(renderSpendsTable, 100);
     setTimeout(renderSpendsTable, 500);
+    if(typeof window.renderRosterTable === 'function'){
+      setTimeout(window.renderRosterTable, 150);
+      setTimeout(window.renderRosterTable, 650);
+    }
   });
 
   document.addEventListener('click', function(e){
