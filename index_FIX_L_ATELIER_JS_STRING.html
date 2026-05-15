@@ -9546,5 +9546,72 @@ document.addEventListener('DOMContentLoaded', function(){
 })();
 </script>
 
+<script id="recma-media-intel-final-render-guard">
+(function(){
+  function isEmpty(id){
+    const el = document.getElementById(id);
+    return !el || !String(el.innerHTML || '').trim();
+  }
+
+  function isActive(viewId){
+    const el = document.getElementById(viewId);
+    return !!(el && el.classList.contains('active'));
+  }
+
+  window.recmaForceMediaIntelRender = function(){
+    try{
+      if(typeof window.recmaFillSpendsFilters === 'function') window.recmaFillSpendsFilters();
+      if(typeof window.recmaPrepareLocalIntel === 'function') window.recmaPrepareLocalIntel();
+    }catch(e){ console.warn('media intel filter prep', e); }
+
+    try{
+      if(typeof window.renderRosterTable === 'function' && (isActive('view-atlas-roster') || isEmpty('roster-tbody'))){
+        window.renderRosterTable();
+        setTimeout(window.renderRosterTable, 80);
+      }
+    }catch(e){ console.warn('media agency roster render', e); }
+
+    try{
+      if(typeof window.renderNBBView === 'function' && (isActive('view-nbb-report') || isEmpty('nbb-tbody'))){
+        window.renderNBBView();
+      }
+    }catch(e){ console.warn('new biz balance render', e); }
+
+    try{
+      if(typeof PP_ALL_DATA !== 'undefined' && (isActive('view-pitch-pulse') || isEmpty('pp-tbody') || isEmpty('pp-sector-chart'))){
+        if(typeof window.initPPFilters === 'function') window.initPPFilters();
+        if(typeof ppFiltered === 'undefined' || !Array.isArray(ppFiltered) || !ppFiltered.length) ppFiltered = Array.from(PP_ALL_DATA || []);
+        const zEl = document.getElementById('ppf-zone');
+        const cEl = document.getElementById('ppf-country');
+        if(zEl && !zEl.value) zEl.value = 'APAC';
+        if(cEl && !cEl.value) cEl.value = 'HONG KONG';
+        if(typeof window.applyPPFilters === 'function') window.applyPPFilters();
+        else if(typeof window.renderPPAll === 'function') window.renderPPAll();
+      }
+    }catch(e){ console.warn('pitch pulse render', e); }
+
+    try{
+      if((isActive('view-atlas-awards') || isEmpty('awards-tbody') || isEmpty('awards-advertiser-tbody'))){
+        if(typeof window.recmaRenderLocalAwards === 'function') window.recmaRenderLocalAwards();
+        else if(typeof window.renderAwardsView === 'function') window.renderAwardsView();
+      }
+    }catch(e){ console.warn('awards render', e); }
+  };
+
+  function schedule(){
+    [0, 150, 500, 1200].forEach(delay => setTimeout(window.recmaForceMediaIntelRender, delay));
+  }
+
+  document.addEventListener('DOMContentLoaded', schedule);
+  window.addEventListener('load', schedule);
+  document.addEventListener('click', function(e){
+    if(e.target && e.target.closest && e.target.closest('.nav-item,.nav-sub-item')) schedule();
+  }, true);
+  document.addEventListener('change', function(e){
+    if(e.target && /^(roster-|nbb-|pp-|ppf-|awards-)/.test(e.target.id || '')) schedule();
+  }, true);
+})();
+</script>
+
 </body>
 </html>
