@@ -7008,6 +7008,71 @@ const ROSTER_GROUP_TEXT = {
   'Independent':'#374151'
 };
 
+// Build Agency Roster data from the restored Advertiser Spends dataset.
+// The original static ROSTER_DATA block is not present in this file, so the roster
+// chart must derive its agency totals from SPENDS_DATA at render time.
+var ROSTER_DATA = [];
+
+function splitRosterField(value) {
+  return String(value || '')
+    .split(',')
+    .map(v => v.trim())
+    .filter(Boolean);
+}
+
+function normalizeRosterAgency(name) {
+  const clean = String(name || '').trim();
+  if(!clean) return 'Unknown agency';
+  if(/^havas$/i.test(clean)) return 'Havas Media';
+  return clean;
+}
+
+function normalizeRosterGroup(group) {
+  const clean = String(group || '').trim();
+  if(!clean) return 'Independent';
+  if(/^wpp$/i.test(clean) || /^groupm$/i.test(clean)) return 'WPP Media';
+  if(/^omd om group$/i.test(clean) || /^omnicom$/i.test(clean)) return 'Omnicom Media Group';
+  if(/^havas$/i.test(clean)) return 'Havas Media Network';
+  if(/^publicis$/i.test(clean)) return 'Publicis Media';
+  if(/^dentsu$/i.test(clean)) return 'dentsu';
+  return clean;
+}
+
+function recmaBuildRosterDataFromSpends() {
+  const rows = Array.isArray(window.SPENDS_DATA) ? window.SPENDS_DATA : [];
+  const byAgency = {};
+
+  rows.forEach(r => {
+    const agencies = splitRosterField(r.agency);
+    const groups = splitRosterField(r.group);
+    if(!agencies.length) return;
+
+    const value = Number(r.spends) || 0;
+    const splitValue = value / agencies.length;
+
+    agencies.forEach((agencyName, idx) => {
+      const agency = normalizeRosterAgency(agencyName);
+      const group = normalizeRosterGroup(groups[idx] || groups[0] || 'Independent');
+      const key = agency + '||' + group;
+      if(!byAgency[key]) {
+        byAgency[key] = {agency, group, total:0, count:0};
+      }
+      byAgency[key].total += splitValue;
+      byAgency[key].count += 1;
+    });
+  });
+
+  return Object.values(byAgency)
+    .map(r => ({...r, total: Math.round(r.total * 10) / 10}))
+    .filter(r => r.total > 0)
+    .sort((a,b) => b.total - a.total);
+}
+
+function recmaRefreshRosterData() {
+  ROSTER_DATA = recmaBuildRosterDataFromSpends();
+  return ROSTER_DATA;
+}
+
 // Sector totals derived from SPENDS_DATA
 function getRosterSectorData() {
   const map = {};
@@ -7023,6 +7088,16 @@ let rosterSortKey='total', rosterSortDir=-1;
 let rosterView='bar'; // 'bar' | 'table'
 
 function renderRosterTable() {
+  recmaRefreshRosterData();
+  if(!ROSTER_DATA.length) {
+    const setKPI = (id,val) => { const el=document.getElementById(id); if(el) el.textContent=val; };
+    setKPI('roster-kpi-total', '—');
+    setKPI('roster-kpi-count', '0');
+    const tbody = document.getElementById('roster-tbody');
+    if(tbody) tbody.innerHTML = '<tr><td colspan="6" style="padding:14px;color:var(--gray-600)">No roster data available.</td></tr>';
+    return;
+  }
+
   // Render KPIs
   const totalOAV = ROSTER_DATA.reduce((s,r)=>s+r.total,0);
   const havasRow = ROSTER_DATA.find(r=>r.group==='Havas Media Network');
@@ -7186,6 +7261,7 @@ function rosterShareView(view) {
 function sortRoster(key) {
   rosterSortDir = rosterSortKey===key ? -rosterSortDir : -1;
   rosterSortKey = key;
+  recmaRefreshRosterData();
   const totalOAV = ROSTER_DATA.reduce((s,r)=>s+r.total,0);
   renderRosterTableRows(totalOAV);
 }
@@ -9187,6 +9263,10 @@ document.addEventListener('DOMContentLoaded', function(){
     recmaFillSpendsFilters();
     setTimeout(renderSpendsTable, 100);
     setTimeout(renderSpendsTable, 500);
+    if(typeof window.renderRosterTable === 'function'){
+      setTimeout(window.renderRosterTable, 150);
+      setTimeout(window.renderRosterTable, 650);
+    }
   });
 
   document.addEventListener('click', function(e){
