@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RECMA · Industry Structure Alternative 2</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700;800;900&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F3F4F6;
+  --ink:#111827;
+  --muted:#6B7280;
+  --line:#E5E7EB;
+  --card:#FFFFFF;
+  --shadow:0 2px 6px rgba(0,0,0,.04),0 14px 34px rgba(15,23,42,.08);
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--ink);
+  font-family:'IBM Plex Sans',system-ui,sans-serif;
+}
+.wrap{
+  max-width:1260px;
+  margin:auto;
+  padding:34px 24px 60px;
+}
+.hero{
+  background:linear-gradient(135deg,#111827 0%,#5B1732 58%,#D81B45 100%);
+  color:white;
+  border-radius:0 0 24px 24px;
+  padding:28px 32px;
+  margin-bottom:24px;
+  box-shadow:0 22px 60px rgba(17,24,39,.22);
+}
+.eyebrow{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:10px;
+  letter-spacing:.16em;
+  text-transform:uppercase;
+  color:rgba(255,255,255,.72);
+}
+h1{
+  margin:8px 0 0;
+  font-size:42px;
+  line-height:1;
+  letter-spacing:-.05em;
+}
+.note{
+  color:#4B5563;
+  margin:0 0 18px;
+}
+.structure-table{
+  display:flex;
+  flex-direction:column;
+  gap:18px;
+}
+.group-block{
+  background:white;
+  border:1px solid var(--line);
+  border-radius:20px;
+  box-shadow:var(--shadow);
+  overflow:hidden;
+}
+.group-grid{
+  display:grid;
+  grid-template-columns:220px 230px 300px 1fr;
+}
+.group-cell{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border-right:1px solid var(--line);
+  padding:22px;
+  background:#fff;
+}
+.group-title{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:14px;
+  text-align:center;
+}
+.group-pill{
+  width:10px;
+  height:54px;
+  border-radius:999px;
+  border:1px solid rgba(0,0,0,.12);
+  flex:0 0 auto;
+}
+.group-title h2{
+  margin:0;
+  font-size:25px;
+  line-height:1;
+  letter-spacing:-.04em;
+}
+.col{
+  border-right:1px solid var(--line);
+}
+.col:last-child{
+  border-right:none;
+}
+.col-head{
+  min-height:44px;
+  padding:12px 14px;
+  background:#F9FAFB;
+  border-bottom:1px solid var(--line);
+  font-family:'IBM Plex Mono',monospace;
+  font-size:10px;
+  text-transform:uppercase;
+  letter-spacing:.08em;
+  color:#4B5563;
+  font-weight:800;
+}
+.row{
+  min-height:58px;
+  padding:14px;
+  border-bottom:1px solid #EEF2F7;
+  display:flex;
+  align-items:center;
+  color:#111827;
+  font-size:14px;
+  line-height:1.45;
+}
+.row:last-child{
+  border-bottom:none;
+}
+.agency{
+  font-weight:800;
+}
+.detail{
+  color:#111827;
+  font-weight:500;
+}
+.empty{
+  color:#9CA3AF;
+  font-style:italic;
+}
+.special{
+  padding:14px 18px 18px;
+}
+.special-list{
+  margin:0;
+  padding:0;
+  list-style:none;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+.special-list li{
+  position:relative;
+  padding-left:16px;
+  color:#111827;
+  font-weight:500;
+  line-height:1.45;
+}
+.special-list li::before{
+  content:"";
+  position:absolute;
+  left:0;
+  top:.65em;
+  width:6px;
+  height:6px;
+  border-radius:50%;
+  background:#D81B45;
+}
+@media(max-width:1000px){
+  .group-grid{
+    grid-template-columns:1fr;
+  }
+  .group-cell,.col{
+    border-right:none;
+    border-bottom:1px solid var(--line);
+  }
+  .col:last-child{border-bottom:none}
+}
+
+.group-cell.colored{
+background:#fff;
+}
+.group-cell.colored.wpp{
+background:#FFE4FF;
+}
+.group-cell.colored.publicis{
+background:#FFEADD;
+}
+.group-cell.colored.omnicom{
+background:#FFE699;
+}
+.group-cell.colored.dentsu{
+background:#E2F0D9;
+}
+.group-cell.colored.havas{
+background:#DCB9FF;
+}
+.group-cell.colored .group-title{
+justify-content:center;
+}
+.group-cell.colored .group-title h2{
+font-size:27px;
+}
+
+</style>
+</head>
+<body>
+<main class="wrap">
+  <section class="hero">
+    <div class="eyebrow">RECMA · Hong Kong · Qualitative Evaluation</div>
+    <h1>Structure of the Industry</h1>
+  </section>
+
+  <p class="note">Alternative 2: four-column layout by group — Group, Agencies, Details / dedicated units, and Specialized agencies / brands.</p>
+
+  <section class="structure-table">
+
+    <article class="group-block">
+      <div class="group-grid">
+        <div class="group-cell colored wpp">
+          <div class="group-title">
+            
+            <h2>WPP<br>Media</h2>
+          </div>
+        </div>
+
+        <div class="col">
+          <div class="col-head">Agencies</div>
+          <div class="row agency">Wavemaker</div>
+          <div class="row agency">EssenceMediacom</div>
+          <div class="row agency">Mindshare</div>
+        </div>
+
+        <div class="col">
+          <div class="col-head">Details / client units / creation date</div>
+          <div class="row detail">Incl. Red Fuse Colgate Palmolive</div>
+          <div class="row detail">Merger between Essence and Mediacom early 2023</div>
+          <div class="row empty">—</div>
+        </div>
+
+        <div class="col">
+          <div class="col-head">Specialized agencies or brands</div>
+          <div class="special">
+            <ul class="special-list">
+              <li>Platform: WPP Open</li>
+              <li>Choreograph — data, technology</li>
+              <li>The Goat Agency / Inca — data, influencer</li>
+              <li>Nexus — trading, performance, programmatic</li>
+              <li>Hogarth / WPP Production — content, production</li>
+              <li>Xaxis — programmatic trading</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <article class="group-block">
+      <div class="group-grid">
+        <div class="group-cell colored publicis">
+          <div class="group-title">
+            
+            <h2>Publicis<br>Media Gr.</h2>
+          </div>
+        </div>
+
+        <div class="col">
+          <div class="col-head">Agencies</div>
+          <div class="row agency">Zenith</div>
+          <div class="row agency">Starcom</div>
+          <div class="row agency">Spark Foundry</div>
+        </div>
+
+        <div class="col">
+          <div class="col-head">Details / client units / creation date</div>
+          <div class="row detail">Includes Blue 449</div>
+          <div class="row empty">—</div>
+          <div class="row empty">—</div>
+          <div class="row detail">Client unit: PlatformGSK / GSK</div>
+        </div>
+
+        <div class="col">
+          <div class="col-head">Specialized agencies or brands</div>
+          <div class="special">
+            <ul class="special-list">
+              <li>Platform: Core AI</li>
+              <li>Digitas — content, creative + media, data</li>
+              <li>Epsilon — data, identity</li>
+              <li>PMX — trading, performance, programmatic</li>
+              <li>Performics — performance marketing</li>
+              <li>Publicis Production / Prodigious — production, content</li>
+              <li>Connected Media / Publicis Media — planning, data</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <article class="group-block">
+      <div class="group-grid">
+        <div class="group-cell colored omnicom">
+          <div class="group-title">
+            
+            <h2>Omnicom<br>Media</h2>
+          </div>
+        </div>
+
+        <div class="col">
+          <div class="col-head">Agencies</div>
+          <div class="row agency">OMD</div>
+          <div class="row agency">PHD</div>
+          <div class="row agency">Hearts &amp; Science</div>
+          <div class="row agency">UM incl. Initiative</div>
+        </div>
+
+        <div class="col">
+          <div class="col-head">Details / client units / creation date</div>
+          <div class="row empty">—</div>
+          <div class="row empty">—</div>
+          <div class="row empty">—</div>
+          <div class="row detail">Integrated in Dec 2025 as part of Omnicom’s acquisition of IPG</div>
+        </div>
+
+        <div class="col">
+          <div class="col-head">Specialized agencies or brands</div>
+          <div class="special">
+            <ul class="special-list">
+              <li>Platform: Omni</li>
+              <li>Acxiom incl. Annalect — data, analytics, identity</li>
+              <li>Omnicom Production / Studios — production, content</li>
+              <li>Kinesso — performance, data, activation</li>
+              <li>Creo — influencer marketing</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <article class="group-block">
+      <div class="group-grid">
+        <div class="group-cell colored dentsu">
+          <div class="group-title">
+            
+            <h2>dentsu</h2>
+          </div>
+        </div>
+
+        <div class="col">
+          <div class="col-head">Agencies</div>
+          <div class="row agency">Carat</div>
+          <div class="row agency">dentsu X</div>
+          <div class="row agency">iProspect</div>
+        </div>
+
+        <div class="col">
+          <div class="col-head">Details / client units / creation date</div>
+          <div class="row empty">—</div>
+          <div class="row empty">—</div>
+          <div class="row detail">2022 merger iProspect / Vizeum</div>
+        </div>
+
+        <div class="col">
+          <div class="col-head">Specialized agencies or brands</div>
+          <div class="special">
+            <ul class="special-list">
+              <li>Platform: Connect</li>
+              <li>Merkle — performance, data, CX, identity via Merkury</li>
+              <li>dentsu Creative — content, social, production</li>
+              <li>tag — content, production</li>
+              <li>Amplifi — trading, programmatic</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <article class="group-block">
+      <div class="group-grid">
+        <div class="group-cell colored havas">
+          <div class="group-title">
+            
+            <h2>Havas<br>Media</h2>
+          </div>
+        </div>
+
+        <div class="col">
+          <div class="col-head">Agencies</div>
+          <div class="row agency">Havas Media</div>
+        </div>
+
+        <div class="col">
+          <div class="col-head">Details / client units / creation date</div>
+          <div class="row detail">Includes Arena</div>
+        </div>
+
+        <div class="col">
+          <div class="col-head">Specialized agencies or brands</div>
+          <div class="special">
+            <ul class="special-list">
+              <li>Platform: Converged.AI</li>
+              <li>CSA — data, technology</li>
+              <li>Havas Market — commerce, eCommerce</li>
+              <li>Havas Play — content, activation, entertainment</li>
+              <li>Edge Performance Network — performance</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </article>
+
+  </section>
+</main>
+</body>
+</html>
