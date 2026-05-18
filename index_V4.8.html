@@ -3986,9 +3986,9 @@ body.profile-global .pp-global-tabs-container{display:block;}
 <select class="spends-hero-filter filter-select" id="spends-group-filter" onchange="filterSpends()"><option value="">Group</option></select>
 
 <div class="spends-hero-filter spends-country-multiselect" id="spends-country-filter" data-values="">
-<button aria-expanded="false" class="spends-country-button" id="spends-country-button" onclick="toggleSpendsCountryMenu(event)" type="button">Country</button>
+<button aria-expanded="false" class="spends-country-button" id="spends-country-button" type="button">Country</button>
 <div class="spends-country-menu" id="spends-country-menu">
-<input class="spends-country-search" id="spends-country-search" oninput="renderSpendsCountryOptions()" placeholder="Type a country" type="text"/>
+<input class="spends-country-search" id="spends-country-search" placeholder="Type a country" type="text"/>
 <div class="spends-country-options" id="spends-country-options"></div>
 </div>
 </div>
@@ -10268,20 +10268,35 @@ document.addEventListener('DOMContentLoaded', function(){
     if([...el.options].some(o => o.value === current)) el.value = current;
   }
 
-  const SPENDS_COUNTRIES = ["Argentina", "Australia", "Austria", "Belgium", "Canada", "Chile", "China", "Colombia", "Czech Republic", "Denmark", "Finland", "France", "Germany", "Greece", "Hong Kong", "Hungary", "India", "Indonesia", "Ireland", "Italy", "Japan", "MENA", "Malaysia", "Mexico", "Netherlands", "New Zealand", "Norway", "Peru", "Philippines", "Poland", "Portugal", "Romania", "Singapore", "Slovakia", "South Africa", "South Korea", "Spain", "Sweden", "Switzerland", "Taiwan", "Thailand", "Turkey", "UK", "USA", "Vietnam"].sort((a,b) => a.localeCompare(b));
-  const SPENDS_LOCKED_COUNTRY = SPENDS_COUNTRIES[1];
-  const SPENDS_LOCKED_MESSAGE = "Yuou didn't subscribe to this offfer, please contact phi@recma.com to have more information";
+  var SPENDS_COUNTRIES = ["Argentina", "Australia", "Austria", "Belgium", "Canada", "Chile", "China", "Colombia", "Czech Republic", "Denmark", "Finland", "France", "Germany", "Greece", "Hong Kong", "Hungary", "India", "Indonesia", "Ireland", "Italy", "Japan", "MENA", "Malaysia", "Mexico", "Netherlands", "New Zealand", "Norway", "Peru", "Philippines", "Poland", "Portugal", "Romania", "Singapore", "Slovakia", "South Africa", "South Korea", "Spain", "Sweden", "Switzerland", "Taiwan", "Thailand", "Turkey", "UK", "USA", "Vietnam"];
+  SPENDS_COUNTRIES.sort(function(a,b){ return a.localeCompare(b); });
+  var SPENDS_LOCKED_COUNTRY = SPENDS_COUNTRIES[1];
+  var SPENDS_LOCKED_MESSAGE = "Yuou didn't subscribe to this offfer, please contact phi@recma.com to have more information";
+
+  function spendsEsc(value){
+    return String(value == null ? '' : value).replace(/[&<>"']/g, function(ch){
+      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch];
+    });
+  }
 
   function getSelectedSpendsCountries(){
-    const el = document.getElementById('spends-country-filter');
-    return (el?.dataset.values || '').split('|').map(v => v.trim()).filter(Boolean);
+    var el = document.getElementById('spends-country-filter');
+    var raw = el && el.dataset ? el.dataset.values : '';
+    return String(raw || '').split('|').map(function(v){ return v.trim(); }).filter(Boolean);
   }
 
   function setSelectedSpendsCountries(values){
-    const clean = [...new Set((values || []).filter(v => SPENDS_COUNTRIES.includes(v) && v !== SPENDS_LOCKED_COUNTRY))];
-    const el = document.getElementById('spends-country-filter');
-    if(el) el.dataset.values = clean.join('|');
-    const btn = document.getElementById('spends-country-button');
+    var selected = {};
+    var clean = [];
+    (values || []).forEach(function(country){
+      if(SPENDS_COUNTRIES.indexOf(country) !== -1 && country !== SPENDS_LOCKED_COUNTRY && !selected[country]){
+        selected[country] = true;
+        clean.push(country);
+      }
+    });
+    var el = document.getElementById('spends-country-filter');
+    if(el && el.dataset) el.dataset.values = clean.join('|');
+    var btn = document.getElementById('spends-country-button');
     if(btn){
       btn.textContent = clean.length ? (clean.length === 1 ? clean[0] : clean.length + ' countries') : 'Country';
       btn.title = clean.join(', ');
@@ -10289,45 +10304,76 @@ document.addEventListener('DOMContentLoaded', function(){
   }
 
   window.renderSpendsCountryOptions = function(){
-    const container = document.getElementById('spends-country-options');
+    var container = document.getElementById('spends-country-options');
     if(!container) return;
-    const query = (document.getElementById('spends-country-search')?.value || '').toLowerCase().trim();
-    const selected = new Set(getSelectedSpendsCountries());
-    const countries = SPENDS_COUNTRIES.filter(country => !query || country.toLowerCase().includes(query));
-    container.innerHTML = countries.map(country => {
-      const locked = country === SPENDS_LOCKED_COUNTRY;
-      const checked = selected.has(country) ? ' checked' : '';
-      const title = locked ? SPENDS_LOCKED_MESSAGE.replace(/"/g,'&quot;') : '';
+    var search = document.getElementById('spends-country-search');
+    var query = String((search && search.value) || '').toLowerCase().trim();
+    var selected = getSelectedSpendsCountries();
+    var countries = SPENDS_COUNTRIES.filter(function(country){ return !query || country.toLowerCase().indexOf(query) !== -1; });
+    container.innerHTML = countries.map(function(country){
+      var locked = country === SPENDS_LOCKED_COUNTRY;
+      var checked = selected.indexOf(country) !== -1 ? ' checked' : '';
+      var title = locked ? spendsEsc(SPENDS_LOCKED_MESSAGE) : '';
       return '<label class="spends-country-option' + (locked ? ' is-disabled' : '') + '" title="' + title + '">' +
-        '<input type="checkbox" value="' + country.replace(/"/g,'&quot;') + '"' + checked + (locked ? ' disabled' : '') + ' onchange="toggleSpendsCountrySelection(this.value, this.checked)">' +
-        '<span>' + country + '</span>' +
+        '<input type="checkbox" value="' + spendsEsc(country) + '" data-country="' + spendsEsc(country) + '"' + checked + (locked ? ' disabled' : '') + '>' +
+        '<span>' + spendsEsc(country) + '</span>' +
       '</label>';
     }).join('') || '<div class="spends-country-option is-disabled">No country found</div>';
   };
 
   window.toggleSpendsCountrySelection = function(country, checked){
-    const selected = new Set(getSelectedSpendsCountries());
-    if(checked) selected.add(country); else selected.delete(country);
-    setSelectedSpendsCountries([...selected]);
+    var selected = getSelectedSpendsCountries();
+    var pos = selected.indexOf(country);
+    if(checked && pos === -1) selected.push(country);
+    if(!checked && pos !== -1) selected.splice(pos, 1);
+    setSelectedSpendsCountries(selected);
     renderSpendsCountryOptions();
     renderSpendsTable();
   };
 
   window.toggleSpendsCountryMenu = function(event){
-    if(event) event.stopPropagation();
-    const el = document.getElementById('spends-country-filter');
-    const btn = document.getElementById('spends-country-button');
+    if(event && event.stopPropagation) event.stopPropagation();
+    var el = document.getElementById('spends-country-filter');
+    var btn = document.getElementById('spends-country-button');
     if(!el) return;
-    const open = !el.classList.contains('is-open');
+    var open = !el.classList.contains('is-open');
     el.classList.toggle('is-open', open);
     if(btn) btn.setAttribute('aria-expanded', open ? 'true' : 'false');
     if(open){
       renderSpendsCountryOptions();
-      setTimeout(() => document.getElementById('spends-country-search')?.focus(), 0);
+      setTimeout(function(){
+        var search = document.getElementById('spends-country-search');
+        if(search) search.focus();
+      }, 0);
     }
   };
 
+  function recmaBindSpendsCountryFilter(){
+    var btn = document.getElementById('spends-country-button');
+    var search = document.getElementById('spends-country-search');
+    var options = document.getElementById('spends-country-options');
+    if(btn && !btn.dataset.bound){
+      btn.dataset.bound = '1';
+      btn.addEventListener('click', window.toggleSpendsCountryMenu);
+    }
+    if(search && !search.dataset.bound){
+      search.dataset.bound = '1';
+      search.addEventListener('input', window.renderSpendsCountryOptions);
+      search.addEventListener('click', function(event){ event.stopPropagation(); });
+    }
+    if(options && !options.dataset.bound){
+      options.dataset.bound = '1';
+      options.addEventListener('change', function(event){
+        var target = event.target;
+        if(target && target.matches && target.matches('input[type="checkbox"][data-country]')){
+          window.toggleSpendsCountrySelection(target.getAttribute('data-country'), target.checked);
+        }
+      });
+    }
+  }
+
   function recmaInitSpendsCountryFilter(){
+    recmaBindSpendsCountryFilter();
     setSelectedSpendsCountries(getSelectedSpendsCountries());
     renderSpendsCountryOptions();
   }
