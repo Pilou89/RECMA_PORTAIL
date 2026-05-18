@@ -2111,6 +2111,119 @@ body.profile-global .pp-global-tabs-container{display:block;}
   appearance:auto !important;
 }
 
+#view-atlas-spends .section-header .spends-country-multiselect{
+  position:relative !important;
+  min-width:190px !important;
+  max-width:240px !important;
+  height:36px !important;
+  z-index:8 !important;
+}
+
+#view-atlas-spends .section-header .spends-country-button{
+  width:100% !important;
+  height:36px !important;
+  min-height:36px !important;
+  border-radius:999px !important;
+  border:0 !important;
+  background:#fff !important;
+  color:#7C214E !important;
+  font-size:11px !important;
+  font-weight:800 !important;
+  padding:0 32px 0 14px !important;
+  box-shadow:0 4px 12px rgba(0,0,0,.10) !important;
+  font-family:'Montserrat',sans-serif !important;
+  cursor:pointer;
+  overflow:hidden;
+  text-align:left;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+
+#view-atlas-spends .section-header .spends-country-button::after{
+  content:'▾';
+  position:absolute;
+  right:13px;
+  top:9px;
+  color:#7C214E;
+  font-size:12px;
+}
+
+#view-atlas-spends .section-header .spends-country-multiselect.is-open .spends-country-button::after{
+  content:'▴';
+}
+
+#view-atlas-spends .section-header .spends-country-menu{
+  display:none;
+  position:absolute;
+  top:42px;
+  left:0;
+  width:280px;
+  max-width:calc(100vw - 40px);
+  background:#fff;
+  border:1px solid #F1CCD6;
+  border-radius:18px;
+  box-shadow:0 18px 38px rgba(15,23,42,.18);
+  padding:10px;
+  z-index:40;
+}
+
+#view-atlas-spends .section-header .spends-country-multiselect.is-open .spends-country-menu{
+  display:block;
+}
+
+#view-atlas-spends .section-header .spends-country-search{
+  width:100%;
+  height:34px;
+  border:1px solid #F1CCD6;
+  border-radius:999px;
+  color:#7C214E;
+  font-size:11px;
+  font-weight:700;
+  padding:0 12px;
+  outline:none;
+  margin-bottom:8px;
+}
+
+#view-atlas-spends .section-header .spends-country-options{
+  max-height:230px;
+  overflow:auto;
+  padding-right:2px;
+}
+
+#view-atlas-spends .section-header .spends-country-option{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  min-height:30px;
+  border-radius:10px;
+  color:#374151;
+  cursor:pointer;
+  font-size:11px;
+  font-weight:700;
+  padding:6px 8px;
+}
+
+#view-atlas-spends .section-header .spends-country-option:hover{
+  background:#FDF2F5;
+  color:#7C214E;
+}
+
+#view-atlas-spends .section-header .spends-country-option input{
+  accent-color:#7C214E;
+}
+
+#view-atlas-spends .section-header .spends-country-option.is-disabled{
+  color:#9ca3af;
+  cursor:not-allowed;
+  opacity:.64;
+}
+
+#view-atlas-spends .section-header .spends-country-option.is-disabled:hover{
+  background:#f3f4f6;
+  color:#9ca3af;
+}
+
+
 @media(max-width:1100px){
   #view-atlas-spends .section-header .filter-input{
     width:150px !important;
@@ -3872,7 +3985,13 @@ body.profile-global .pp-global-tabs-container{display:block;}
 
 <select class="spends-hero-filter filter-select" id="spends-group-filter" onchange="filterSpends()"><option value="">Group</option></select>
 
-<select class="spends-hero-filter filter-select" id="spends-country-filter" onchange="filterSpends()"><option value="">Country</option><option value="Hong Kong">Hong Kong</option></select>
+<div class="spends-hero-filter spends-country-multiselect" id="spends-country-filter" data-values="">
+<button aria-expanded="false" class="spends-country-button" id="spends-country-button" onclick="toggleSpendsCountryMenu(event)" type="button">Country</button>
+<div class="spends-country-menu" id="spends-country-menu">
+<input class="spends-country-search" id="spends-country-search" oninput="renderSpendsCountryOptions()" placeholder="Type a country" type="text"/>
+<div class="spends-country-options" id="spends-country-options"></div>
+</div>
+</div>
 
 <select class="filter-select spends-hero-filter" id="spends-currency-filter" onchange="filterSpends()">
 <option value="USD">Currency USD</option>
@@ -6749,7 +6868,13 @@ function applyProfile(profile) {
   // In global mode: reset country filters to show all data
   if(profile==='multi') {
     const sc = document.getElementById('spends-country-filter');
-    if(sc) { sc.value=''; if(typeof filterSpends==='function') filterSpends(); }
+    if(sc) {
+      sc.dataset.values='';
+      const sb = document.getElementById('spends-country-button'); if(sb) { sb.textContent='Country'; sb.title=''; }
+      const ss = document.getElementById('spends-country-search'); if(ss) ss.value='';
+      if(typeof renderSpendsCountryOptions==='function') renderSpendsCountryOptions();
+      if(typeof filterSpends==='function') filterSpends();
+    }
     const ac = document.getElementById('awards-country-filter');
     if(ac) { ac.value=''; if(typeof recmaRenderLocalAwards==='function') recmaRenderLocalAwards(); }
   }
@@ -10143,9 +10268,73 @@ document.addEventListener('DOMContentLoaded', function(){
     if([...el.options].some(o => o.value === current)) el.value = current;
   }
 
+  const SPENDS_COUNTRIES = ["Argentina", "Australia", "Austria", "Belgium", "Canada", "Chile", "China", "Colombia", "Czech Republic", "Denmark", "Finland", "France", "Germany", "Greece", "Hong Kong", "Hungary", "India", "Indonesia", "Ireland", "Italy", "Japan", "MENA", "Malaysia", "Mexico", "Netherlands", "New Zealand", "Norway", "Peru", "Philippines", "Poland", "Portugal", "Romania", "Singapore", "Slovakia", "South Africa", "South Korea", "Spain", "Sweden", "Switzerland", "Taiwan", "Thailand", "Turkey", "UK", "USA", "Vietnam"].sort((a,b) => a.localeCompare(b));
+  const SPENDS_LOCKED_COUNTRY = SPENDS_COUNTRIES[1];
+  const SPENDS_LOCKED_MESSAGE = "Yuou didn't subscribe to this offfer, please contact phi@recma.com to have more information";
+
+  function getSelectedSpendsCountries(){
+    const el = document.getElementById('spends-country-filter');
+    return (el?.dataset.values || '').split('|').map(v => v.trim()).filter(Boolean);
+  }
+
+  function setSelectedSpendsCountries(values){
+    const clean = [...new Set((values || []).filter(v => SPENDS_COUNTRIES.includes(v) && v !== SPENDS_LOCKED_COUNTRY))];
+    const el = document.getElementById('spends-country-filter');
+    if(el) el.dataset.values = clean.join('|');
+    const btn = document.getElementById('spends-country-button');
+    if(btn){
+      btn.textContent = clean.length ? (clean.length === 1 ? clean[0] : clean.length + ' countries') : 'Country';
+      btn.title = clean.join(', ');
+    }
+  }
+
+  window.renderSpendsCountryOptions = function(){
+    const container = document.getElementById('spends-country-options');
+    if(!container) return;
+    const query = (document.getElementById('spends-country-search')?.value || '').toLowerCase().trim();
+    const selected = new Set(getSelectedSpendsCountries());
+    const countries = SPENDS_COUNTRIES.filter(country => !query || country.toLowerCase().includes(query));
+    container.innerHTML = countries.map(country => {
+      const locked = country === SPENDS_LOCKED_COUNTRY;
+      const checked = selected.has(country) ? ' checked' : '';
+      const title = locked ? SPENDS_LOCKED_MESSAGE.replace(/"/g,'&quot;') : '';
+      return '<label class="spends-country-option' + (locked ? ' is-disabled' : '') + '" title="' + title + '">' +
+        '<input type="checkbox" value="' + country.replace(/"/g,'&quot;') + '"' + checked + (locked ? ' disabled' : '') + ' onchange="toggleSpendsCountrySelection(this.value, this.checked)">' +
+        '<span>' + country + '</span>' +
+      '</label>';
+    }).join('') || '<div class="spends-country-option is-disabled">No country found</div>';
+  };
+
+  window.toggleSpendsCountrySelection = function(country, checked){
+    const selected = new Set(getSelectedSpendsCountries());
+    if(checked) selected.add(country); else selected.delete(country);
+    setSelectedSpendsCountries([...selected]);
+    renderSpendsCountryOptions();
+    renderSpendsTable();
+  };
+
+  window.toggleSpendsCountryMenu = function(event){
+    if(event) event.stopPropagation();
+    const el = document.getElementById('spends-country-filter');
+    const btn = document.getElementById('spends-country-button');
+    if(!el) return;
+    const open = !el.classList.contains('is-open');
+    el.classList.toggle('is-open', open);
+    if(btn) btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    if(open){
+      renderSpendsCountryOptions();
+      setTimeout(() => document.getElementById('spends-country-search')?.focus(), 0);
+    }
+  };
+
+  function recmaInitSpendsCountryFilter(){
+    setSelectedSpendsCountries(getSelectedSpendsCountries());
+    renderSpendsCountryOptions();
+  }
+
   window.recmaFillSpendsFilters = function(){
     const data = window.SPENDS_DATA || [];
-    fillSelect('spends-country-filter', 'Country', ['Hong Kong']);
+    recmaInitSpendsCountryFilter();
     
     fillSelect('spends-agency-filter', 'Agency', uniq(data.map(r => r.agency)));
     fillSelect('spends-group-filter', 'Group', uniq(data.map(r => r.group)));
@@ -10170,7 +10359,7 @@ document.addEventListener('DOMContentLoaded', function(){
     recmaFillSpendsFilters();
 
     const search = (document.getElementById('spends-search')?.value || '').toLowerCase();
-    const countryFilt = document.getElementById('spends-country-filter')?.value || '';
+    const countryFilt = getSelectedSpendsCountries();
     const parentFilt = (document.getElementById('spends-parent-search')?.value || '').toLowerCase();
     const agFilt = document.getElementById('spends-agency-filter')?.value || '';
     const grFilt = document.getElementById('spends-group-filter')?.value || '';
@@ -10182,7 +10371,7 @@ document.addEventListener('DOMContentLoaded', function(){
       parent: recmaParentCompany(r.advertiser)
     })).filter(r =>
       (!search || String(r.advertiser).toLowerCase().includes(search) || String(r.parent).toLowerCase().includes(search) || String(r.sector||'').toLowerCase().includes(search)) &&
-      (!countryFilt || r.country === countryFilt) &&
+      (!countryFilt.length || countryFilt.includes(r.country)) &&
       (!parentFilt || String(r.parent || '').toLowerCase().includes(parentFilt)) &&
       (!agFilt || String(r.agency).includes(agFilt)) &&
       (!grFilt || String(r.group).includes(grFilt)) &&
@@ -10222,9 +10411,12 @@ document.addEventListener('DOMContentLoaded', function(){
     renderSpendsTable();
   };
   window.resetSpendsFilters = function(){
-    ['spends-search','spends-parent-search','spends-country-filter','spends-agency-filter','spends-group-filter','spends-sector-filter'].forEach(id => {
+    ['spends-search','spends-parent-search','spends-agency-filter','spends-group-filter','spends-sector-filter'].forEach(id => {
       const el = document.getElementById(id); if(el) el.value = '';
     });
+    setSelectedSpendsCountries([]);
+    const countrySearch = document.getElementById('spends-country-search'); if(countrySearch) countrySearch.value = '';
+    renderSpendsCountryOptions();
     const cur = document.getElementById('spends-currency-filter'); if(cur) cur.value = 'USD';
     renderSpendsTable();
   };
@@ -10240,7 +10432,12 @@ document.addEventListener('DOMContentLoaded', function(){
   });
 
   document.addEventListener('click', function(e){
-    if(e.target && e.target.closest && e.target.closest('#spends-country-filter,#spends-parent-filter,#spends-agency-filter,#spends-group-filter,#spends-sector-filter')){
+    if(e.target && e.target.closest && e.target.closest('#spends-country-filter')) return;
+    const countryFilter = document.getElementById('spends-country-filter');
+    const countryButton = document.getElementById('spends-country-button');
+    if(countryFilter){ countryFilter.classList.remove('is-open'); }
+    if(countryButton){ countryButton.setAttribute('aria-expanded','false'); }
+    if(e.target && e.target.closest && e.target.closest('#spends-parent-filter,#spends-agency-filter,#spends-group-filter,#spends-sector-filter')){
       recmaFillSpendsFilters();
     }
   }, true);
@@ -10295,7 +10492,7 @@ document.addEventListener('DOMContentLoaded', function(){
     const parentSearch = (document.getElementById('spends-parent-search')?.value || '').toLowerCase();
     const agency = document.getElementById('spends-agency-filter')?.value || '';
     const group = document.getElementById('spends-group-filter')?.value || '';
-    const country = document.getElementById('spends-country-filter')?.value || '';
+    const country = (document.getElementById('spends-country-filter')?.dataset.values || '').split('|').filter(Boolean);
     const sector = document.getElementById('spends-sector-filter')?.value || '';
 
     return data.map(function(r){
@@ -10305,7 +10502,7 @@ document.addEventListener('DOMContentLoaded', function(){
              (!parentSearch || String(r.parent || '').toLowerCase().includes(parentSearch)) &&
              (!agency || String(r.agency || '').includes(agency)) &&
              (!group || String(r.group || '').includes(group)) &&
-             (!country || r.country === country) &&
+             (!country.length || country.includes(r.country)) &&
              (!sector || r.sector === sector);
     });
   }
