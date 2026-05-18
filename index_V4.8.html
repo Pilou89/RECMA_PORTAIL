@@ -1744,6 +1744,7 @@ body.profile-global #view-atlas-roster .section-subtitle,
 body.profile-global #view-atlas-awards .section-subtitle{display:none!important;}
 /* Hide country-specific filters in global mode */
 body.profile-global #spends-country-filter{display:none!important;}
+body.profile-global #spends-country-search{display:none!important;}
 body.profile-global #roster-hero-controls .roster-hero-pill:first-child{display:none!important;}
 body.profile-global #awards-country-filter{display:none!important;}
 /* Show global scope label */
@@ -2110,6 +2111,17 @@ body.profile-global .pp-global-tabs-container{display:block;}
 #view-atlas-spends .section-header select{
   appearance:auto !important;
 }
+
+#view-atlas-spends .section-header #spends-country-filter[multiple]{
+  height:72px !important;
+  min-width:155px !important;
+  padding:6px 10px !important;
+}
+
+#view-atlas-spends .section-header #spends-country-filter option:disabled{
+  color:#9ca3af;
+}
+
 
 @media(max-width:1100px){
   #view-atlas-spends .section-header .filter-input{
@@ -3872,7 +3884,8 @@ body.profile-global .pp-global-tabs-container{display:block;}
 
 <select class="spends-hero-filter filter-select" id="spends-group-filter" onchange="filterSpends()"><option value="">Group</option></select>
 
-<select class="spends-hero-filter filter-select" id="spends-country-filter" onchange="filterSpends()"><option value="">Country</option><option value="Hong Kong">Hong Kong</option></select>
+<input class="spends-hero-filter filter-input" id="spends-country-search" oninput="recmaFillSpendsCountrySelect()" placeholder="Search Country" style="min-width:150px" type="text"/>
+<select class="spends-hero-filter filter-select" id="spends-country-filter" multiple onchange="filterSpends()" size="3" title="Hold Ctrl/Cmd to select several countries"></select>
 
 <select class="filter-select spends-hero-filter" id="spends-currency-filter" onchange="filterSpends()">
 <option value="USD">Currency USD</option>
@@ -6749,7 +6762,12 @@ function applyProfile(profile) {
   // In global mode: reset country filters to show all data
   if(profile==='multi') {
     const sc = document.getElementById('spends-country-filter');
-    if(sc) { sc.value=''; if(typeof filterSpends==='function') filterSpends(); }
+    if(sc) {
+      Array.prototype.slice.call(sc.options || []).forEach(function(option){ option.selected = false; });
+      const ss = document.getElementById('spends-country-search'); if(ss) ss.value='';
+      if(typeof recmaFillSpendsCountrySelect==='function') recmaFillSpendsCountrySelect();
+      if(typeof filterSpends==='function') filterSpends();
+    }
     const ac = document.getElementById('awards-country-filter');
     if(ac) { ac.value=''; if(typeof recmaRenderLocalAwards==='function') recmaRenderLocalAwards(); }
   }
@@ -10143,9 +10161,49 @@ document.addEventListener('DOMContentLoaded', function(){
     if([...el.options].some(o => o.value === current)) el.value = current;
   }
 
+  var SPENDS_COUNTRIES = ["Argentina", "Australia", "Austria", "Belgium", "Canada", "Chile", "China", "Colombia", "Czech Republic", "Denmark", "Finland", "France", "Germany", "Greece", "Hong Kong", "Hungary", "India", "Indonesia", "Ireland", "Italy", "Japan", "MENA", "Malaysia", "Mexico", "Netherlands", "New Zealand", "Norway", "Peru", "Philippines", "Poland", "Portugal", "Romania", "Singapore", "Slovakia", "South Africa", "South Korea", "Spain", "Sweden", "Switzerland", "Taiwan", "Thailand", "Turkey", "UK", "USA", "Vietnam"];
+  SPENDS_COUNTRIES.sort(function(a,b){ return a.localeCompare(b); });
+  var SPENDS_LOCKED_COUNTRY = SPENDS_COUNTRIES[1];
+  var SPENDS_LOCKED_MESSAGE = "Yuou didn't subscribe to this offfer, please contact phi@recma.com to have more information";
+
+  function spendsEsc(value){
+    return String(value == null ? '' : value).replace(/[&<>"']/g, function(ch){
+      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch];
+    });
+  }
+
+  function getSelectedSpendsCountries(){
+    var el = document.getElementById('spends-country-filter');
+    if(!el) return [];
+    return Array.prototype.slice.call(el.selectedOptions || []).map(function(option){ return option.value; }).filter(Boolean);
+  }
+
+  function setSelectedSpendsCountries(values){
+    var el = document.getElementById('spends-country-filter');
+    if(!el) return;
+    var wanted = values || [];
+    Array.prototype.slice.call(el.options || []).forEach(function(option){
+      option.selected = wanted.indexOf(option.value) !== -1 && !option.disabled;
+    });
+  }
+
+  window.recmaFillSpendsCountrySelect = function(){
+    var el = document.getElementById('spends-country-filter');
+    if(!el) return;
+    var selected = getSelectedSpendsCountries();
+    var search = document.getElementById('spends-country-search');
+    var query = String((search && search.value) || '').toLowerCase().trim();
+    var countries = SPENDS_COUNTRIES.filter(function(country){ return !query || country.toLowerCase().indexOf(query) !== -1; });
+    el.innerHTML = countries.map(function(country){
+      var locked = country === SPENDS_LOCKED_COUNTRY;
+      return '<option value="' + spendsEsc(country) + '"' + (locked ? ' disabled title="' + spendsEsc(SPENDS_LOCKED_MESSAGE) + '"' : '') + '>' + spendsEsc(country) + '</option>';
+    }).join('');
+    setSelectedSpendsCountries(selected);
+  };
+
   window.recmaFillSpendsFilters = function(){
     const data = window.SPENDS_DATA || [];
-    fillSelect('spends-country-filter', 'Country', ['Hong Kong']);
+    recmaFillSpendsCountrySelect();
     
     fillSelect('spends-agency-filter', 'Agency', uniq(data.map(r => r.agency)));
     fillSelect('spends-group-filter', 'Group', uniq(data.map(r => r.group)));
@@ -10170,7 +10228,7 @@ document.addEventListener('DOMContentLoaded', function(){
     recmaFillSpendsFilters();
 
     const search = (document.getElementById('spends-search')?.value || '').toLowerCase();
-    const countryFilt = document.getElementById('spends-country-filter')?.value || '';
+    const countryFilt = getSelectedSpendsCountries();
     const parentFilt = (document.getElementById('spends-parent-search')?.value || '').toLowerCase();
     const agFilt = document.getElementById('spends-agency-filter')?.value || '';
     const grFilt = document.getElementById('spends-group-filter')?.value || '';
@@ -10182,7 +10240,7 @@ document.addEventListener('DOMContentLoaded', function(){
       parent: recmaParentCompany(r.advertiser)
     })).filter(r =>
       (!search || String(r.advertiser).toLowerCase().includes(search) || String(r.parent).toLowerCase().includes(search) || String(r.sector||'').toLowerCase().includes(search)) &&
-      (!countryFilt || r.country === countryFilt) &&
+      (!countryFilt.length || countryFilt.includes(r.country)) &&
       (!parentFilt || String(r.parent || '').toLowerCase().includes(parentFilt)) &&
       (!agFilt || String(r.agency).includes(agFilt)) &&
       (!grFilt || String(r.group).includes(grFilt)) &&
@@ -10222,9 +10280,12 @@ document.addEventListener('DOMContentLoaded', function(){
     renderSpendsTable();
   };
   window.resetSpendsFilters = function(){
-    ['spends-search','spends-parent-search','spends-country-filter','spends-agency-filter','spends-group-filter','spends-sector-filter'].forEach(id => {
+    ['spends-search','spends-parent-search','spends-agency-filter','spends-group-filter','spends-sector-filter'].forEach(id => {
       const el = document.getElementById(id); if(el) el.value = '';
     });
+    setSelectedSpendsCountries([]);
+    const countrySearch = document.getElementById('spends-country-search'); if(countrySearch) countrySearch.value = '';
+    if(typeof recmaFillSpendsCountrySelect === 'function') recmaFillSpendsCountrySelect();
     const cur = document.getElementById('spends-currency-filter'); if(cur) cur.value = 'USD';
     renderSpendsTable();
   };
@@ -10295,7 +10356,8 @@ document.addEventListener('DOMContentLoaded', function(){
     const parentSearch = (document.getElementById('spends-parent-search')?.value || '').toLowerCase();
     const agency = document.getElementById('spends-agency-filter')?.value || '';
     const group = document.getElementById('spends-group-filter')?.value || '';
-    const country = document.getElementById('spends-country-filter')?.value || '';
+    const countryEl = document.getElementById('spends-country-filter');
+    const country = countryEl ? Array.prototype.slice.call(countryEl.selectedOptions || []).map(function(option){ return option.value; }).filter(Boolean) : [];
     const sector = document.getElementById('spends-sector-filter')?.value || '';
 
     return data.map(function(r){
@@ -10305,7 +10367,7 @@ document.addEventListener('DOMContentLoaded', function(){
              (!parentSearch || String(r.parent || '').toLowerCase().includes(parentSearch)) &&
              (!agency || String(r.agency || '').includes(agency)) &&
              (!group || String(r.group || '').includes(group)) &&
-             (!country || r.country === country) &&
+             (!country.length || country.includes(r.country)) &&
              (!sector || r.sector === sector);
     });
   }
